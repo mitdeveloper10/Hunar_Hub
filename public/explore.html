@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Hunar-Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Hunar-Hub</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto" id="navLinks">
+                    <!-- Links injected based on auth -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <h2 class="text-center mb-5">Discover Local Entrepreneurs</h2>
+
+        <!-- Search & Filter -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <input type="text" id="searchInput" class="form-control"
+                    placeholder="Search by name, business, or bio...">
+            </div>
+            <div class="col-md-4">
+                <select id="categoryFilter" class="form-select">
+                    <option value="">All Categories</option>
+                    <option value="Artisan">Artisan</option>
+                    <option value="Tailor">Tailor</option>
+                    <option value="Potter">Potter</option>
+                    <option value="Cobbler">Cobbler</option>
+                    <option value="Food">Food & Beverages</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" onclick="filterEntrepreneurs()">Search</button>
+            </div>
+        </div>
+
+        <div id="entrepreneurList" class="row">
+            <!-- Entrepreneurs loaded here -->
+        </div>
+
+        <h2 class="text-center my-5">Browse All Products</h2>
+        <div id="allProductsList" class="row">
+            <p class="text-center">Loading products...</p>
+        </div>
+
+        <!-- Products Modal -->
+        <div class="modal fade" id="productsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitle">Products</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="modalProductsList" class="row">
+                            <!-- Products loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout Modal -->
+        <div class="modal fade" id="checkoutModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Checkout</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Confirm your order for <strong id="checkoutProductName"></strong>.</p>
+                        <p class="text-muted">Price: $<span id="checkoutProductPrice"></span></p>
+                        <div class="mb-3">
+                            <label class="form-label">Payment Method</label>
+                            <select id="paymentMethod" class="form-select">
+                                <option value="COD">Cash on Delivery (COD)</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Card">Credit/Debit Card</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="confirmOrder()">Place Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        const navLinks = document.getElementById('navLinks');
+
+        if (user) {
+            const dashboardLink = user.role === 'customer' ? '/dashboard-customer.html' : '/dashboard-entrepreneur.html';
+            navLinks.innerHTML = `
+                <li class="nav-item"><a class="nav-link" href="${dashboardLink}">My Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="logout()">Logout</a></li>
+            `;
+        } else {
+            navLinks.innerHTML = `
+                <li class="nav-item"><a class="nav-link" href="/login.html">Login</a></li>
+                <li class="nav-item"><a class="nav-link" href="/register.html">Register</a></li>
+            `;
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            localStorage.removeItem('user');
+            window.location.href = '/index.html';
+        }
+
+        let allEntrepreneurs = [];
+        let currentOrder = null;
+
+        async function loadEntrepreneurs() {
+            try {
+                const response = await fetch('/api/entrepreneurs');
+                allEntrepreneurs = await response.json();
+                filterEntrepreneurs(); // Initial render
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function filterEntrepreneurs() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const categoryMatch = document.getElementById('categoryFilter').value;
+
+            const filtered = allEntrepreneurs.filter(e => {
+                const nameMatch = (e.business_name || '').toLowerCase().includes(term) ||
+                    (e.bio || '').toLowerCase().includes(term);
+                const catMatch = categoryMatch ? e.category === categoryMatch : true;
+                return nameMatch && catMatch;
+            });
+
+            const container = document.getElementById('entrepreneurList');
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center"><p>No results found.</p></div>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(e => `
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <h4 class="card-title">${e.business_name}</h4>
+                            <h6 class="text-muted mb-3">${e.category || 'General'} | ${e.location || 'Local'}</h6>
+                            <p class="card-text">${e.bio || 'No bio available.'}</p>
+                            <button class="btn btn-outline-primary" onclick="viewProducts(${e.id}, '${e.business_name}')">View Offers</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadAllProducts() {
+            try {
+                const response = await fetch(`/api/products/recent?t=${Date.now()}`);
+                const products = await response.json();
+                const container = document.getElementById('allProductsList');
+
+                if (products.length === 0) {
+                    container.innerHTML = '<p class="text-center">No products found.</p>';
+                    return;
+                }
+
+                container.innerHTML = products.map(p => {
+                    const images = p.images && p.images.length > 0 ? p.images : ['https://via.placeholder.com/300'];
+                    const carouselId = `recent-carousel-${p.id}`;
+                    const carouselHtml = images.length > 1 ? `
+                            <div id="${carouselId}" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    ${images.map((img, idx) => `
+                                        <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+                                            <img src="${img}" class="d-block w-100" style="height: 150px; object-fit: cover;" alt="${p.name}">
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        ` : `<img src="${images[0]}" class="card-img-top" alt="${p.name}" style="height: 150px; object-fit: cover;">`;
+
+                    return `
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100">
+                             ${carouselHtml}
+                            <div class="card-body">
+                                <h5 class="card-title">${p.name}</h5>
+                                <p class="small text-muted mb-2">${p.description || ''}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">$${p.price}</span>
+                                    ${user && user.role === 'customer'
+                            ? `<button class="btn btn-sm btn-success" onclick="buyProduct(${p.entrepreneur_id}, ${p.id}, '${p.name}', ${p.price})">Buy</button>`
+                            : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `}).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        window.viewProducts = async function (userId, businessName) {
+            document.getElementById('modalTitle').textContent = `Offers from ${businessName}`;
+            const container = document.getElementById('modalProductsList');
+            container.innerHTML = '<p class="text-center">Loading...</p>';
+
+            const modal = new bootstrap.Modal(document.getElementById('productsModal'));
+            modal.show();
+
+            try {
+                // Fetch Products and Services in parallel
+                const [prodRes, servRes] = await Promise.all([
+                    fetch(`/api/products/${userId}`),
+                    fetch(`/api/services/${userId}`)
+                ]);
+
+                const products = await prodRes.json();
+                const services = await servRes.json();
+
+                let html = '';
+
+                // Render Products
+                html += '<h4 class="mb-3">Products</h4><div class="row">';
+                if (products.length === 0) {
+                    html += '<p class="text-muted">No products listed.</p>';
+                } else {
+                    html += products.map(p => {
+                        const images = p.images && p.images.length > 0 ? p.images : ['https://via.placeholder.com/300'];
+                        const carouselId = `carousel-${p.id}`;
+
+                        const carouselHtml = images.length > 1 ? `
+                            <div id="${carouselId}" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    ${images.map((img, idx) => `
+                                        <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+                                            <img src="${img}" class="d-block w-100" style="height: 200px; object-fit: cover;" alt="${p.name}">
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        ` : `<img src="${images[0]}" class="card-img-top" alt="${p.name}" style="height: 200px; object-fit: cover;">`;
+
+                        return `
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                ${carouselHtml}
+                                <div class="card-body">
+                                    <h5>${p.name}</h5>
+                                    <p class="small">${p.description || ''}</p>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <span class="fw-bold">$${p.price}</span>
+                                        ${user && user.role === 'customer'
+                                ? `<button class="btn btn-sm btn-success" onclick="buyProduct(${userId}, ${p.id}, '${p.name}', ${p.price})">Buy</button>`
+                                : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('');
+                }
+                html += '</div>';
+
+                // Render Services
+                html += '<hr><h4 class="mb-3 mt-3">Services</h4><div class="row">';
+                if (services.length === 0) {
+                    html += '<p class="text-muted">No services offered.</p>';
+                } else {
+                    html += services.map(s => `
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100 border-info">
+                                <div class="card-body">
+                                    <h5>${s.name}</h5>
+                                    <p class="small">${s.description || ''}</p>
+                                    <p class="fw-bold text-muted">${s.price_range || 'Price varies'}</p>
+                                    ${user && user.role === 'customer'
+                            ? `<button class="btn btn-sm btn-info text-white" onclick="requestService(${userId}, ${s.id})">Request Service</button>`
+                            : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                html += '</div>';
+
+                container.innerHTML = html;
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<p class="text-danger text-center">Failed to load content.</p>';
+            }
+        };
+
+        window.requestService = async function (entrepreneurId, serviceId) {
+            const details = prompt('Please provide details for your request (e.g. preferred date, specific issue):');
+            if (details === null) return; // Cancelled
+
+            try {
+                const response = await fetch('/api/service-requests', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ entrepreneur_id: entrepreneurId, service_id: serviceId, details })
+                });
+
+                if (response.ok) {
+                    alert('Service requested successfully!');
+                } else {
+                    const res = await response.json();
+                    alert(res.error || 'Failed to request service');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error requesting service');
+            }
+        };
+
+        window.buyProduct = function (entrepreneurId, productId, name, price) {
+            currentOrder = { entrepreneurId, productId };
+            document.getElementById('checkoutProductName').textContent = name;
+            document.getElementById('checkoutProductPrice').textContent = price;
+            new bootstrap.Modal(document.getElementById('checkoutModal')).show();
+        };
+
+        window.confirmOrder = async function () {
+            if (!currentOrder) return;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        entrepreneur_id: currentOrder.entrepreneurId,
+                        product_id: currentOrder.productId,
+                        payment_method: paymentMethod
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Order placed successfully!');
+                    // Hide modal properly
+                    const modalEl = document.getElementById('checkoutModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                    currentOrder = null;
+                } else {
+                    const res = await response.json();
+                    alert(res.error || 'Failed to place order');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error placing order');
+            }
+        };
+
+        loadEntrepreneurs();
+        loadAllProducts();
+    </script>
+</body>
+
+</html>

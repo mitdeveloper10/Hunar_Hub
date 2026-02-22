@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Hunar-Hub</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="/explore.html">Explore Products</a></li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="navbar-text text-white me-3" id="welcomeMsg">Welcome</span>
+                    <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>My Orders</h2>
+            <a href="/explore.html" class="btn btn-primary">Find More Products</a>
+        </div>
+
+        <div class="card mb-5">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Image</th>
+                                <th>Product</th>
+                                <th>Entrepreneur</th>
+                                <th>Price</th>
+                                <th>Payment</th>
+                                <th>Date</th>
+                                <th style="width: 25%;">Status / Progress</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersList">
+                            <!-- Orders will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="mb-4">My Service Requests</h3>
+        <div class="card mb-5">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Service</th>
+                                <th>Professional</th>
+                                <th>Date Requested</th>
+                                <th>Details</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requestsList">
+                            <!-- Requests will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Modal -->
+        <div class="modal fade" id="reviewModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Write a Review</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="reviewForm">
+                            <input type="hidden" id="reviewEntrepreneurId">
+                            <div class="mb-3">
+                                <label class="form-label">Rating</label>
+                                <select id="reviewRating" class="form-select" required>
+                                    <option value="5">5 - Excellent</option>
+                                    <option value="4">4 - Very Good</option>
+                                    <option value="3">3 - Good</option>
+                                    <option value="2">2 - Fair</option>
+                                    <option value="1">1 - Poor</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Comment</label>
+                                <textarea id="reviewComment" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Submit Review</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check Auth
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'customer') {
+            window.location.href = '/login.html';
+        }
+        document.getElementById('welcomeMsg').textContent = `Welcome, ${user.name}`;
+
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/my-orders');
+                const orders = await response.json();
+                const tbody = document.getElementById('ordersList');
+
+                if (orders.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center">No orders yet. Start exploring!</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = orders.map(o => {
+                    const progress = getProgress(o.status);
+                    return `
+                    <tr>
+                        <td>#${o.id}</td>
+                        <td><img src="${o.image_url || 'https://via.placeholder.com/50'}" alt="Product" style="width: 50px; height: 50px; object-fit: cover;"></td>
+                        <td>${o.product_name}</td>
+                        <td>${o.business_name}</td>
+                        <td>$${o.price}</td>
+                        <td>${o.payment_method || 'N/A'}</td>
+                        <td>${new Date(o.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar ${progress.class}" role="progressbar" style="width: ${progress.width}%;" aria-valuenow="${progress.width}" aria-valuemin="0" aria-valuemax="100">
+                                    ${o.status}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary ms-2" onclick="openReviewModal(${o.entrepreneur_id})">Review</button>
+                        </td>
+                    </tr>
+                `}).join('');
+            } catch (err) {
+                console.error('Error loading orders', err);
+            }
+        }
+
+        function getProgress(status) {
+            switch (status) {
+                case 'pending': return { width: 25, class: 'bg-warning text-dark' };
+                case 'accepted': return { width: 50, class: 'bg-info text-dark' };
+                case 'shipped': return { width: 75, class: 'bg-primary' };
+                case 'delivered': return { width: 100, class: 'bg-success' };
+                case 'completed': return { width: 100, class: 'bg-success' };
+                default: return { width: 0, class: 'bg-secondary' };
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            localStorage.removeItem('user');
+            window.location.href = '/index.html';
+        }
+
+        async function loadServiceRequests() {
+            try {
+                const response = await fetch('/api/service-requests');
+                const requests = await response.json();
+                const tbody = document.getElementById('requestsList');
+
+                if (requests.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No service requests yet.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = requests.map(r => `
+                    <tr>
+                        <td>#${r.id}</td>
+                        <td>${r.service_name}</td>
+                        <td>${r.business_name}</td>
+                        <td>${new Date(r.request_date).toLocaleDateString()}</td>
+                        <td><small>${r.details || '-'}</small></td>
+                        <td><span class="badge ${getStatusBadge(r.status)}">${r.status}</span></td>
+                        <td>
+                             <button class="btn btn-sm btn-outline-primary ms-2" onclick="openReviewModal(${r.entrepreneur_id})">Review</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading requests', err);
+            }
+        }
+
+        function getStatusBadge(status) {
+            switch (status) {
+                case 'pending': return 'bg-warning text-dark';
+                case 'accepted': return 'bg-info text-dark';
+                case 'rejected': return 'bg-danger';
+                case 'completed': return 'bg-success';
+                default: return 'bg-secondary';
+            }
+        }
+
+        // Review Logic
+        function openReviewModal(entrepreneurId) {
+            document.getElementById('reviewEntrepreneurId').value = entrepreneurId;
+            new bootstrap.Modal(document.getElementById('reviewModal')).show();
+        }
+
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const entrepreneurId = document.getElementById('reviewEntrepreneurId').value;
+            const rating = document.getElementById('reviewRating').value;
+            const comment = document.getElementById('reviewComment').value;
+
+            try {
+                const response = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ entrepreneur_id: entrepreneurId, rating, comment })
+                });
+
+                if (response.ok) {
+                    alert('Review submitted!');
+                    bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+                    e.target.reset();
+                } else {
+                    alert('Failed to submit review');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        loadOrders();
+        loadServiceRequests();
+    </script>
+</body>
+
+</html>

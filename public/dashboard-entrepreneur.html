@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrepreneur Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Hunar-Hub</a>
+            <div class="d-flex">
+                <span class="navbar-text text-white me-3" id="welcomeMsg">Welcome</span>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row">
+            <!-- Sidebar / Add Product -->
+            <div class="col-md-4 mb-4">
+                <div class="card p-4">
+                    <h4>Add New Product</h4>
+                    <form id="addProductForm">
+                        <div class="mb-3">
+                            <label class="form-label">Product Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price ($)</label>
+                            <input type="number" step="0.01" name="price" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Product Images (Max 5)</label>
+                            <input type="file" name="images" class="form-control" accept="image/*" multiple>
+                            <small class="text-muted">Hold Ctrl to select multiple images</small>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Add Product</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Add Service Form -->
+                <div class="card p-4 mt-4 border-info">
+                    <h4>Offer a Service</h4>
+                    <form id="addServiceForm">
+                        <div class="mb-3">
+                            <label class="form-label">Service Name</label>
+                            <input type="text" name="name" class="form-control"
+                                placeholder="e.g. Tailoring, Pottery Repair" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea name="description" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price Range</label>
+                            <input type="text" name="price_range" class="form-control" placeholder="e.g. $10 - $50">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-info text-white">Add Service</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-8">
+                <!-- My Products -->
+                <h3 class="mb-3">My Products</h3>
+                <div id="productsList" class="row mb-5">
+                    <!-- Products will be loaded here -->
+                </div>
+
+                <!-- My Services -->
+                <h3 class="mb-3">My Services</h3>
+                <div id="servicesList" class="row mb-5">
+                    <!-- Services will be loaded here -->
+                </div>
+
+                <!-- Incoming Orders -->
+                <h3 class="mb-3">Incoming Orders</h3>
+                <div class="card mb-5">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Product</th>
+                                        <th>Customer</th>
+                                        <th>Payment</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersList">
+                                    <!-- Orders will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Incoming Service Requests -->
+                <h3 class="mb-3">Service Requests</h3>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Service</th>
+                                        <th>Customer</th>
+                                        <th>Date</th>
+                                        <th>Details</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requestsList">
+                                    <!-- Requests will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check Auth
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'entrepreneur') {
+            window.location.href = '/login.html';
+        }
+        document.getElementById('welcomeMsg').textContent = `Welcome, ${user.name}`;
+
+        // Initial Load
+        loadProducts();
+        loadOrders();
+        loadServices();
+        loadRequests();
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            localStorage.removeItem('user');
+            window.location.href = '/index.html';
+        }
+
+        // --- Products ---
+        async function loadProducts() {
+            try {
+                const response = await fetch(`/api/products/${user.id}`);
+                const products = await response.json();
+                const container = document.getElementById('productsList');
+                container.innerHTML = products.map(p => {
+                    const images = p.images && p.images.length > 0 ? p.images : ['https://via.placeholder.com/300'];
+                    const hasMultiple = images.length > 1;
+
+                    return `
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                             <div style="height: 200px; overflow: hidden;" class="position-relative">
+                                <img src="${images[0]}" class="card-img-top w-100 h-100" style="object-fit: cover;" alt="${p.name}">
+                                ${hasMultiple ? '<span class="position-absolute bottom-0 end-0 badge bg-dark m-2">Multiple Images</span>' : ''}
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${p.name}</h5>
+                                <p class="card-text text-muted">${p.description || ''}</p>
+                                <p class="card-text fw-bold">$${p.price}</p>
+                            </div>
+                        </div>
+                    </div>
+                `}).join('');
+            } catch (err) {
+                console.error('Error loading products', err);
+            }
+        }
+
+        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    alert('Product added!');
+                    e.target.reset();
+                    loadProducts();
+                } else {
+                    const res = await response.json();
+                    alert(res.error || 'Failed to add product');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // --- Services ---
+        async function loadServices() {
+            try {
+                const response = await fetch(`/api/services/${user.id}`);
+                const services = await response.json();
+                const container = document.getElementById('servicesList');
+                container.innerHTML = services.map(s => `
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-info">
+                            <div class="card-body">
+                                <h5 class="card-title">${s.name}</h5>
+                                <p class="card-text text-muted">${s.description || ''}</p>
+                                <p class="card-text fw-bold">Price Range: ${s.price_range || 'N/A'}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading services', err);
+            }
+        }
+
+        document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/services', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    alert('Service added!');
+                    e.target.reset();
+                    loadServices();
+                } else {
+                    alert('Failed to add service');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        // --- Orders ---
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/my-orders');
+                const orders = await response.json();
+                const tbody = document.getElementById('ordersList');
+                tbody.innerHTML = orders.map(o => `
+                    <tr>
+                        <td>#${o.id}</td>
+                        <td>${o.product_name} ($${o.price})</td>
+                        <td>${o.customer_name}</td>
+                        <td>${o.payment_method || 'N/A'}</td>
+                        <td>${new Date(o.created_at).toLocaleDateString()}</td>
+                        <td>${getStatusBadge(o.status)}</td>
+                        <td>
+                            ${getActionButtons(o)}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading orders', err);
+            }
+        }
+
+        function getStatusBadge(status) {
+            let color = 'bg-secondary';
+            if (status === 'pending') color = 'bg-warning text-dark';
+            if (status === 'accepted') color = 'bg-info text-dark';
+            if (status === 'shipped') color = 'bg-primary';
+            if (status === 'delivered') color = 'bg-success';
+            if (status === 'completed') color = 'bg-success';
+            return `<span class="badge ${color}">${status}</span>`;
+        }
+
+        function getActionButtons(o) {
+            if (o.status === 'pending') {
+                return `<button class="btn btn-sm btn-success" onclick="updateStatus(${o.id}, 'accepted')">Accept</button>`;
+            }
+            if (o.status === 'accepted') {
+                return `<button class="btn btn-sm btn-primary" onclick="updateStatus(${o.id}, 'shipped')">Mark Shipped</button>`;
+            }
+            if (o.status === 'shipped') {
+                return `<button class="btn btn-sm btn-success" onclick="updateStatus(${o.id}, 'delivered')">Mark Delivered</button>`;
+            }
+            return '<span class="text-muted">Completed</span>';
+        }
+
+        async function updateStatus(orderId, status) {
+            if (!confirm(`Mark order #${orderId} as ${status}?`)) return;
+            try {
+                const response = await fetch(`/api/orders/${orderId}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+
+                if (response.ok) {
+                    loadOrders();
+                } else {
+                    const res = await response.json();
+                    alert(res.error || 'Failed to update status');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // --- Requests ---
+        async function loadRequests() {
+            try {
+                const response = await fetch('/api/service-requests');
+                const requests = await response.json();
+                const tbody = document.getElementById('requestsList');
+                tbody.innerHTML = requests.map(r => `
+                    <tr>
+                        <td>#${r.id}</td>
+                        <td>${r.service_name}</td>
+                        <td>${r.customer_name}</td>
+                        <td>${new Date(r.request_date).toLocaleDateString()}</td>
+                        <td><small>${r.details || '-'}</small></td>
+                        <td><span class="badge bg-info text-dark">${r.status}</span></td>
+                        <td>
+                            ${r.status === 'pending'
+                        ? `<button class="btn btn-sm btn-success" onclick="updateRequestStatus(${r.id}, 'accepted')">Accept</button>
+                           <button class="btn btn-sm btn-danger" onclick="updateRequestStatus(${r.id}, 'rejected')">Reject</button>`
+                        : ''}
+                            ${r.status === 'accepted'
+                        ? `<button class="btn btn-sm btn-primary" onclick="updateRequestStatus(${r.id}, 'completed')">Complete</button>`
+                        : ''}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading requests', err);
+            }
+        }
+
+        async function updateRequestStatus(reqId, status) {
+            if (!confirm(`Mark request #${reqId} as ${status}?`)) return;
+            try {
+                const response = await fetch(`/api/service-requests/${reqId}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (response.ok) {
+                    loadRequests();
+                } else {
+                    alert('Failed to update status');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+
+</html>
