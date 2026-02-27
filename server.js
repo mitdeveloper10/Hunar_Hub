@@ -513,6 +513,98 @@ app.get('/api/admin/pending-entrepreneurs', (req, res) => {
     }
 });
 
+// Admin: List all users
+app.get('/api/admin/users', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    try {
+        const users = db.prepare('SELECT id, name, email, role, created_at FROM users').all();
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+// Admin: List all entrepreneurs
+app.get('/api/admin/entrepreneurs-all', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    try {
+        const ents = db.prepare(`
+            SELECT u.id, u.name, u.email, e.business_name, e.category, e.location, e.verified
+            FROM users u
+            JOIN entrepreneurs e ON u.id = e.user_id
+        `).all();
+        res.json(ents);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch entrepreneurs' });
+    }
+});
+
+// Admin: List all orders
+app.get('/api/admin/orders', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    try {
+        const orders = db.prepare(`
+            SELECT o.id, o.status, o.payment_method, o.created_at, 
+                   p.name as product_name, p.price,
+                   u.name as customer_name,
+                   e.business_name as entrepreneur_name
+            FROM orders o
+            JOIN products p ON o.product_id = p.id
+            JOIN users u ON o.customer_id = u.id
+            JOIN entrepreneurs e ON o.entrepreneur_id = e.user_id
+        `).all();
+        res.json(orders);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+});
+
+// Admin: List all service requests
+app.get('/api/admin/requests', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    try {
+        const requests = db.prepare(`
+            SELECT sr.*, s.name as service_name, 
+                   u.name as customer_name,
+                   e.business_name as entrepreneur_name
+            FROM service_requests sr
+            JOIN services s ON sr.service_id = s.id
+            JOIN users u ON sr.customer_id = u.id
+            JOIN entrepreneurs e ON sr.entrepreneur_id = e.user_id
+        `).all();
+        res.json(requests);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch requests' });
+    }
+});
+
+// Admin: List all reviews (Feedback)
+app.get('/api/admin/reviews', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    try {
+        const reviews = db.prepare(`
+            SELECT r.*, u.name as customer_name, e.business_name 
+            FROM reviews r
+            JOIN users u ON r.customer_id = u.id
+            JOIN entrepreneurs e ON r.entrepreneur_id = e.user_id
+        `).all();
+        res.json(reviews);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch reviews' });
+    }
+});
+
+
 // Start Server
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

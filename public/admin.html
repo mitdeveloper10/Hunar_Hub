@@ -11,70 +11,43 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">HunarHub Admin</a>
-            <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            HunarHub Admin
         </div>
-    </nav>
+        <a href="#" class="nav-link active" onclick="showSection('dashboard', this)">
+            <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-link" onclick="showSection('users', this)">
+            <i class="bi bi-people"></i> <span>Users</span>
+        </a>
+        <a href="#" class="nav-link" onclick="showSection('entrepreneurs', this)">
+            <i class="bi bi-shop"></i> <span>Entrepreneurs</span>
+        </a>
+        <a href="#" class="nav-link" onclick="showSection('orders', this)">
+            <i class="bi bi-cart"></i> <span>Orders</span>
+        </a>
+        <a href="#" class="nav-link" onclick="showSection('requests', this)">
+            <i class="bi bi-tools"></i> <span>Requests</span>
+        </a>
+        <a href="#" class="nav-link" onclick="showSection('feedback', this)">
+            <i class="bi bi-chat-left-dots"></i> <span>Feedback</span>
+        </a>
+        <hr class="text-secondary mx-3">
+        <a href="#" class="nav-link text-danger" onclick="logout()">
+            <i class="bi bi-box-arrow-right"></i> <span>Logout</span>
+        </a>
+    </div>
 
-    <div class="container py-5">
-        <h2 class="mb-4">Platform Overview</h2>
-
-        <!-- Stats Row -->
-        <div class="row mb-5" id="statsRow">
-            <div class="col-md-3">
-                <div class="card bg-primary text-white text-center p-3">
-                    <h3>Users</h3>
-                    <h2 id="userCount">-</h2>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-success text-white text-center p-3">
-                    <h3>Entrepreneurs</h3>
-                    <h2 id="entCount">-</h2>
-                    <small>Pending: <span id="pendingCount">-</span></small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-warning text-dark text-center p-3">
-                    <h3>Orders</h3>
-                    <h2 id="orderCount">-</h2>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-info text-white text-center p-3">
-                    <h3>Requests</h3>
-                    <h2 id="reqCount">-</h2>
-                </div>
-            </div>
-        </div>
-
-        <h3 class="mb-3">Pending Verifications</h3>
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Business</th>
-                                <th>Category</th>
-                                <th>Email</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="verificationTable">
-                            <tr>
-                                <td colspan="5" class="text-center">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <!-- Main Content -->
+    <div class="admin-main">
+        <div id="content">
+            <!-- Sections will be loaded here -->
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Check Auth
         const user = JSON.parse(localStorage.getItem('user'));
@@ -82,19 +55,216 @@
             window.location.href = '/login.html';
         }
 
+        const sections = {
+            dashboard: `
+                <h2 class="mb-4">Platform Overview</h2>
+                <div class="row mb-5" id="statsRow">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white text-center p-3 mb-3">
+                            <h3>Users</h3>
+                            <h2 id="userCount">-</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white text-center p-3 mb-3">
+                            <h3>Entrepreneurs</h3>
+                            <h2 id="entCount">-</h2>
+                            <small>Pending: <span id="pendingCount">-</span></small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-dark text-center p-3 mb-3">
+                            <h3>Orders</h3>
+                            <h2 id="orderCount">-</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white text-center p-3 mb-3">
+                            <h3>Requests</h3>
+                            <h2 id="reqCount">-</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="mb-3">Pending Verifications</h3>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Business</th>
+                                        <th>Category</th>
+                                        <th>Email</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="verificationTable">
+                                    <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `,
+            users: `
+                <h2 class="mb-4">Registered Users</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Joined At</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTable">
+                                    <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `,
+            entrepreneurs: `
+                <h2 class="mb-4">Entrepreneurs Management</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Business Name</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="entrepreneursTable">
+                                    <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `,
+            orders: `
+                <h2 class="mb-4">Platform Orders</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Product</th>
+                                        <th>Customer</th>
+                                        <th>Entrepreneur</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTable">
+                                    <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `,
+            requests: `
+                <h2 class="mb-4">Service Requests</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Service</th>
+                                        <th>Customer</th>
+                                        <th>Entrepreneur</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requestsTable">
+                                    <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `,
+            feedback: `
+                <h2 class="mb-4">Customer Feedback</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Customer</th>
+                                        <th>Entrepreneur</th>
+                                        <th>Rating</th>
+                                        <th>Comment</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="feedbackTable">
+                                    <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        function showSection(section, el) {
+            // Update Active Link
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            // Load Content
+            document.getElementById('content').innerHTML = sections[section];
+
+            // Trigger Data Load
+            if (section === 'dashboard') {
+                loadStats();
+                loadPending();
+            } else if (section === 'users') {
+                loadUsers();
+            } else if (section === 'entrepreneurs') {
+                loadEntrepreneurs();
+            } else if (section === 'orders') {
+                loadOrders();
+            } else if (section === 'requests') {
+                loadRequests();
+            } else if (section === 'feedback') {
+                loadFeedback();
+            }
+        }
+
         async function loadStats() {
             try {
                 const res = await fetch('/api/admin/stats');
                 const data = await res.json();
-
                 document.getElementById('userCount').innerText = data.users;
                 document.getElementById('entCount').innerText = data.entrepreneurs;
                 document.getElementById('pendingCount').innerText = data.pending_verifications;
                 document.getElementById('orderCount').innerText = data.orders;
                 document.getElementById('reqCount').innerText = data.requests;
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         async function loadPending() {
@@ -102,26 +272,112 @@
                 const res = await fetch('/api/admin/pending-entrepreneurs');
                 const list = await res.json();
                 const tbody = document.getElementById('verificationTable');
-
                 if (list.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5" class="text-center">No pending verifications.</td></tr>';
                     return;
                 }
-
                 tbody.innerHTML = list.map(e => `
                     <tr>
                         <td>${e.name}</td>
                         <td>${e.business_name}</td>
                         <td>${e.category}</td>
                         <td>${e.email}</td>
+                        <td><button class="btn btn-sm btn-success" onclick="verifyEntrepreneur(${e.id})">Verify</button></td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/admin/users');
+                const users = await res.json();
+                const tbody = document.getElementById('usersTable');
+                tbody.innerHTML = users.map(u => `
+                    <tr>
+                        <td>${u.id}</td>
+                        <td>${u.name}</td>
+                        <td>${u.email}</td>
+                        <td><span class="badge ${u.role === 'admin' ? 'bg-danger' : 'bg-primary'}">${u.role}</span></td>
+                        <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadEntrepreneurs() {
+            try {
+                const res = await fetch('/api/admin/entrepreneurs-all');
+                const list = await res.json();
+                const tbody = document.getElementById('entrepreneursTable');
+                tbody.innerHTML = list.map(e => `
+                    <tr>
+                        <td>${e.id}</td>
+                        <td>${e.business_name}</td>
+                        <td>${e.name}</td>
+                        <td>${e.email}</td>
+                        <td><span class="badge ${e.verified ? 'bg-success' : 'bg-warning text-dark'}">${e.verified ? 'Verified' : 'Pending'}</span></td>
                         <td>
-                            <button class="btn btn-sm btn-success" onclick="verifyEntrepreneur(${e.id})">Verify</button>
+                            ${!e.verified ? `<button class="btn btn-sm btn-success" onclick="verifyEntrepreneur(${e.id})">Verify</button>` : 'N/A'}
                         </td>
                     </tr>
                 `).join('');
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadOrders() {
+            try {
+                const res = await fetch('/api/admin/orders');
+                const orders = await res.json();
+                const tbody = document.getElementById('ordersTable');
+                tbody.innerHTML = orders.map(o => `
+                    <tr>
+                        <td>#${o.id}</td>
+                        <td>${o.product_name}</td>
+                        <td>${o.customer_name}</td>
+                        <td>${o.entrepreneur_name}</td>
+                        <td>${o.payment_method || 'N/A'}</td>
+                        <td><span class="badge bg-info text-dark">${o.status}</span></td>
+                        <td>${new Date(o.created_at).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadRequests() {
+            try {
+                const res = await fetch('/api/admin/requests');
+                const requests = await res.json();
+                const tbody = document.getElementById('requestsTable');
+                tbody.innerHTML = requests.map(r => `
+                    <tr>
+                        <td>#${r.id}</td>
+                        <td>${r.service_name}</td>
+                        <td>${r.customer_name}</td>
+                        <td>${r.entrepreneur_name}</td>
+                        <td><span class="badge bg-secondary">${r.status}</span></td>
+                        <td>${new Date(r.request_date).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadFeedback() {
+            try {
+                const res = await fetch('/api/admin/reviews');
+                const reviews = await res.json();
+                const tbody = document.getElementById('feedbackTable');
+                tbody.innerHTML = reviews.map(r => `
+                    <tr>
+                        <td>#${r.id}</td>
+                        <td>${r.customer_name}</td>
+                        <td>${r.business_name}</td>
+                        <td><span class="text-warning">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span></td>
+                        <td>${r.comment}</td>
+                        <td>${new Date(r.created_at).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error(err); }
         }
 
         async function verifyEntrepreneur(id) {
@@ -130,14 +386,16 @@
                 const res = await fetch(`/api/admin/verify/${id}`, { method: 'POST' });
                 if (res.ok) {
                     alert('Verified!');
-                    loadStats();
-                    loadPending();
-                } else {
-                    alert('Failed to verify');
-                }
-            } catch (err) {
-                console.error(err);
-            }
+                    // Refresh current view if needed
+                    const activeLink = document.querySelector('.sidebar .nav-link.active');
+                    if (activeLink.innerText.includes('Dashboard')) {
+                        loadStats();
+                        loadPending();
+                    } else if (activeLink.innerText.includes('Entrepreneurs')) {
+                        loadEntrepreneurs();
+                    }
+                } else alert('Failed to verify');
+            } catch (err) { console.error(err); }
         }
 
         async function logout() {
@@ -146,51 +404,9 @@
             window.location.href = '/index.html';
         }
 
-        loadStats();
-        loadPending();
+        // Initialize with Dashboard
+        showSection('dashboard', document.querySelector('.sidebar .nav-link.active'));
     </script>
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h5>Hunar-Hub</h5>
-                    <p>Empowering local artisans and micro-entrepreneurs by connecting them with a wider community.
-                        Discover, support, and grow together.</p>
-                </div>
-                <div class="col-md-2 mb-4 col-6">
-                    <h5>Quick Links</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/explore.html">Explore</a></li>
-                        <li><a href="/register.html">Get Started</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-2 mb-4 col-6">
-                    <h5>Support</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <h5>Follow Us</h5>
-                    <div class="social-links">
-                        <a href="#"><i class="bi bi-facebook"></i></a>
-                        <a href="#"><i class="bi bi-twitter-x"></i></a>
-                        <a href="#"><i class="bi bi-instagram"></i></a>
-                        <a href="#"><i class="bi bi-linkedin"></i></a>
-                    </div>
-                    <p class="mt-3 text-muted"><i class="bi bi-geo-alt-fill me-2"></i> Local Community, Worldwide impact
-                    </p>
-                </div>
-            </div>
-            <div class="footer-bottom text-center">
-                <p>&copy; 2024 Hunar-Hub. All Rights Reserved. Created by Supporting Local Talent.</p>
-            </div>
-        </div>
-    </footer>
-
 </body>
 
 </html>
