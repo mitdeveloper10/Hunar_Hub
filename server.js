@@ -22,10 +22,16 @@ app.use(session({
 
 // Register
 app.post('/api/register', async (req, res) => {
-    const { name, email, password, role, business_name, bio, category, location } = req.body;
+    const { name, email, password, role, business_name, bio, category, location, otp_code } = req.body;
 
-    if (!name || !email || !password || !role) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    if (!name || !email || !password || !role || !otp_code) {
+        let missing = [];
+        if (!name) missing.push('Name');
+        if (!email) missing.push('Email');
+        if (!password) missing.push('Password');
+        if (!role) missing.push('Role');
+        if (!otp_code) missing.push('OTP Code');
+        return res.status(400).json({ error: `Missing required fields: ${missing.join(', ')}` });
     }
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -40,6 +46,12 @@ app.post('/api/register', async (req, res) => {
     }
 
     try {
+        // Verify OTP
+        const otpCheck = db.prepare('SELECT * FROM otps WHERE email = ? AND code = ? AND expires_at > CURRENT_TIMESTAMP').get(email, otp_code);
+        if (!otpCheck) {
+            return res.status(400).json({ error: 'Invalid or expired OTP' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const insertUser = db.prepare(`
@@ -64,6 +76,10 @@ app.post('/api/register', async (req, res) => {
         });
 
         const newUserId = createUserTransaction();
+
+        // Clear OTP after successful registration
+        db.prepare('DELETE FROM otps WHERE email = ?').run(email);
+
         res.status(201).json({ message: 'User created successfully', userId: newUserId });
 
     } catch (err) {
@@ -604,6 +620,52 @@ app.get('/api/admin/reviews', (req, res) => {
     }
 });
 
+// --- Stats Overview (for Landing Page) ---
+app.get('/api/stats-overview', (req, res) => {
+    try {
+        const artisanCount = db.prepare('SELECT COUNT(*) as count FROM users WHERE role = ?').get('entrepreneur').count;
+        const productCount = db.prepare('SELECT COUNT(*) as count FROM products').get().count;
+        const categoryCount = db.prepare('SELECT COUNT(DISTINCT category) as count FROM entrepreneurs').get().count;
+        const avgRatingRow = db.prepare('SELECT AVG(rating) as avg FROM reviews').get();
+        const averageRating = avgRatingRow.avg ? parseFloat(avgRatingRow.avg).toFixed(1) : "4.9"; // Fallback to 4.9 if no reviews
+
+        res.json({
+            artisanCount,
+            productCount,
+            categoryCount: categoryCount || 10, // Fallback if 0
+            averageRating
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error fetching stats' });
+    }
+});
+
+// OTP Implementation
+app.post('/api/otp/send', (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60000).toISOString(); // 10 mins
+
+    try {
+        // Delete previous OTPs for this email
+        db.prepare('DELETE FROM otps WHERE email = ?').run(email);
+
+        // Store new OTP
+        db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(email, code, expiresAt);
+
+        console.log('---------------------------------');
+        console.log(`[AUTH] OTP for ${email}: ${code}`);
+        console.log('---------------------------------');
+
+        res.json({ message: 'OTP sent successfully (Simulated)' });
+    } catch (err) {
+        console.error('OTP Error:', err);
+        res.status(500).json({ error: 'Failed to send OTP' });
+    }
+});
 
 // Start Server
 app.listen(PORT, () => {

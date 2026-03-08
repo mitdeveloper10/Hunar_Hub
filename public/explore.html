@@ -8,15 +8,22 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="/css/style.css" rel="stylesheet">
+    <script src="/js/toasts.js"></script>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="/">Hunar-Hub</a>
+            <a class="navbar-brand fw-bold" href="/">Hunar-Hub</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto" id="navLinks">
-                    <!-- Links injected based on auth -->
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="/explore.html">Explore</a></li>
+                    <li class="nav-item" id="navAuth">
+                        <!-- Will be populated by JS -->
+                    </li>
                 </ul>
             </div>
         </div>
@@ -26,10 +33,13 @@
         <h2 class="text-center mb-5">Discover Local Entrepreneurs</h2>
 
         <!-- Search & Filter -->
-        <div class="row mb-4">
+        <div class="row mb-4 g-3">
             <div class="col-md-6">
-                <input type="text" id="searchInput" class="form-control"
-                    placeholder="Search by name, business, or bio...">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control border-start-0"
+                        placeholder="Search by name, business, or bio...">
+                </div>
             </div>
             <div class="col-md-4">
                 <select id="categoryFilter" class="form-select">
@@ -337,10 +347,10 @@
                 });
 
                 if (response.ok) {
-                    alert('Service requested successfully!');
+                    showToast('Service requested successfully!', 'success');
                 } else {
                     const res = await response.json();
-                    alert(res.error || 'Failed to request service');
+                    showToast(res.error || 'Failed to request service', 'error');
                 }
             } catch (err) {
                 console.error(err);
@@ -371,7 +381,7 @@
                 });
 
                 if (response.ok) {
-                    alert('Order placed successfully!');
+                    showToast('Order placed successfully!', 'success');
                     // Hide modal properly
                     const modalEl = document.getElementById('checkoutModal');
                     const modal = bootstrap.Modal.getInstance(modalEl);
@@ -379,7 +389,7 @@
                     currentOrder = null;
                 } else {
                     const res = await response.json();
-                    alert(res.error || 'Failed to place order');
+                    showToast(res.error || 'Failed to place order', 'error');
                 }
             } catch (err) {
                 console.error(err);

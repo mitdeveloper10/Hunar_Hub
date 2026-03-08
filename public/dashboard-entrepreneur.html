@@ -8,15 +8,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="/css/style.css" rel="stylesheet">
+    <script src="/js/toasts.js"></script>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="/">Hunar-Hub</a>
-            <div class="d-flex">
-                <span class="navbar-text text-white me-3" id="welcomeMsg">Welcome</span>
-                <button class="btn btn-outline-light btn-sm" onclick="logout()">Logout</button>
+            <a class="navbar-brand fw-bold" href="/">Hunar-Hub Dashboard</a>
+            <div class="d-flex align-items-center">
+                <span class="text-white me-3 d-none d-md-inline" id="welcomeMsg">Welcome</span>
+                <button class="btn btn-light btn-sm text-primary" onclick="logout()">Logout</button>
             </div>
         </div>
     </nav>
@@ -203,12 +204,12 @@
                     body: formData
                 });
                 if (response.ok) {
-                    alert('Product added!');
+                    showToast('Product added!', 'success');
                     e.target.reset();
                     loadProducts();
                 } else {
                     const res = await response.json();
-                    alert(res.error || 'Failed to add product');
+                    showToast(res.error || 'Failed to add product', 'error');
                 }
             } catch (err) {
                 console.error(err);
@@ -249,11 +250,11 @@
                     body: JSON.stringify(data)
                 });
                 if (response.ok) {
-                    alert('Service added!');
+                    showToast('Service added!', 'success');
                     e.target.reset();
                     loadServices();
                 } else {
-                    alert('Failed to add service');
+                    showToast('Failed to add service', 'error');
                 }
             } catch (err) {
                 console.error(err);
@@ -317,10 +318,11 @@
                 });
 
                 if (response.ok) {
+                    showToast('Status updated!', 'success');
                     loadOrders();
                 } else {
                     const res = await response.json();
-                    alert(res.error || 'Failed to update status');
+                    showToast(res.error || 'Failed to update status', 'error');
                 }
             } catch (err) {
                 console.error(err);
@@ -366,9 +368,10 @@
                     body: JSON.stringify({ status })
                 });
                 if (response.ok) {
+                    showToast('Status updated!', 'success');
                     loadRequests();
                 } else {
-                    alert('Failed to update status');
+                    showToast('Failed to update status', 'error');
                 }
             } catch (err) {
                 console.error(err);

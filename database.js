@@ -88,6 +88,13 @@ const schema = `
     FOREIGN KEY(customer_id) REFERENCES users(id),
     FOREIGN KEY(entrepreneur_id) REFERENCES users(id)
   );
+
+  CREATE TABLE IF NOT EXISTS otps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
+    code TEXT NOT NULL,
+    expires_at DATETIME NOT NULL
+  );
 `;
 
 db.exec(schema);

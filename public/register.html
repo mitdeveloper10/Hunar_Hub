@@ -8,15 +8,31 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="/css/style.css" rel="stylesheet">
+    <script src="/js/toasts.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 </head>
 
-<body class="bg-light">
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm border-0">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">Hunar-Hub</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="/explore.html">Explore</a></li>
+                    <li class="nav-item"><a class="btn btn-light text-primary" href="/login.html">Login</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <div class="card p-4">
-                    <h2 class="text-center mb-4">Create Account</h2>
+                <div class="card p-4 shadow-sm border-0">
+                    <h2 class="text-center mb-4 fw-bold">Create Account</h2>
                     <form id="registerForm">
                         <div class="mb-3">
                             <label class="form-label">Full Name</label>
@@ -24,7 +40,17 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Email Address</label>
-                            <input type="email" name="email" class="form-control" required>
+                            <div class="input-group">
+                                <input type="email" name="email" class="form-control" id="emailInput" required>
+                                <button class="btn btn-outline-primary" type="button" id="sendOtpBtn"
+                                    onclick="sendOtp()">Send OTP</button>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="otpSection" style="display: none;">
+                            <label class="form-label text-primary fw-bold">Enter 6-Digit OTP</label>
+                            <input type="text" name="otp_code" class="form-control border-primary" placeholder="XXXXXX"
+                                maxlength="6">
+                            <small class="text-muted">Check your email (simulation logs) for the code.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Password</label>
@@ -72,7 +98,7 @@
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2 mt-4">
+                        <div class="d-grid shadow-sm">
                             <button type="submit" class="btn btn-primary">Register</button>
                         </div>
                         <p class="text-center mt-3">Already have an account? <a href="/login.html">Login</a></p>
@@ -89,6 +115,39 @@
             fields.style.display = role === 'entrepreneur' ? 'block' : 'none';
         }
 
+        async function sendOtp() {
+            const email = document.getElementById('emailInput').value;
+            if (!email) return showToast('Please enter email first', 'error');
+
+            const btn = document.getElementById('sendOtpBtn');
+            btn.disabled = true;
+            btn.innerText = 'Sending...';
+
+            try {
+                const response = await fetch('/api/otp/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                if (response.ok) {
+                    showToast('OTP sent! Check your email (console logs)', 'success');
+                    document.getElementById('otpSection').style.display = 'block';
+                    btn.innerText = 'Resend OTP';
+                } else {
+                    const res = await response.json();
+                    showToast(res.error || 'Failed to send OTP', 'error');
+                    btn.innerText = 'Send OTP';
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Error sending OTP', 'error');
+                btn.innerText = 'Send OTP';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
         // Password Toggle
         const togglePassword = document.getElementById('togglePassword');
         const passwordInput = document.getElementById('passwordInput');
@@ -102,20 +161,28 @@
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData.entries());
+            const data = Object.fromEntries(formData);
 
             // Validation
             const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
             const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
             if (!emailRegex.test(data.email)) {
-                alert('Invalid email format. Must contain @, ., and alphanumeric characters.');
+                showToast('Invalid email format. Must contain @, ., and alphanumeric characters.', 'error');
                 return;
             }
 
             if (!passwordRegex.test(data.password)) {
-                alert('Password must be at least 8 chars, include 1 uppercase, 1 number, and 1 special char.');
+                showToast('Password must be at least 8 chars, include 1 uppercase, 1 number, and 1 special char.', 'error');
                 return;
+            }
+
+            if (data.role === 'entrepreneur' && !data.business_name) {
+                return showToast('Business name is required for entrepreneurs', 'error');
+            }
+
+            if (!data.otp_code) {
+                return showToast('Please verify your email via OTP first', 'error');
             }
 
             try {
@@ -127,14 +194,14 @@
 
                 const result = await response.json();
                 if (response.ok) {
-                    alert('Registration successful! Please login.');
-                    window.location.href = '/login.html';
+                    showToast('Registration successful! Please login.', 'success');
+                    setTimeout(() => window.location.href = '/login.html', 1500);
                 } else {
-                    alert(result.error || 'Registration failed');
+                    showToast(result.error || 'Registration failed', 'error');
                 }
             } catch (err) {
                 console.error(err);
-                alert('An error occurred');
+                showToast('An error occurred', 'error');
             }
         });
     </script>

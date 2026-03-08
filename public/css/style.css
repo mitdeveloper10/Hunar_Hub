@@ -1,13 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
 :root {
-    --primary-color: #0d6efd;
-    --secondary-color: #ffffff;
+    --primary-color: #007ea7;
+    --primary-hover: #003249;
+    --secondary-color: #80ced7;
+    --accent-color: #9ad1d4;
+    --bg-light: #ccdbdc;
+    --text-dark: #1e293b;
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --transition-standard: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #ffffff;
-    color: #212529;
-    /* Standard dark gray for readability */
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+}
+
+/* Unified Professional Buttons */
+.btn {
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: var(--transition-standard) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 15px rgba(0, 126, 167, 0.3) !important;
+}
+
+.btn:active {
+    transform: translateY(-1px) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+a {
+    color: var(--primary-color);
+    transition: var(--transition-standard);
+}
+
+a:hover {
+    color: var(--primary-hover);
+}
+
+.navbar {
+    background-color: var(--primary-color) !important;
 }
 
 /* Ensure Navbar text is white on blue background */
@@ -17,8 +85,8 @@ body {
 }
 
 .hero-section {
-    background: linear-gradient(135deg, #0d6efd 0%, #7ac9fe 100%);
-    color: white !important;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #312e81 100%);
+    color: white;
     padding: 100px 0;
 }
 
@@ -140,4 +208,27 @@ body {
         margin-right: 0;
         font-size: 1.5rem;
     }
+}
+
+/* Scroll Reveal Animations */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered box animations */
+.box-animate {
+    transition-delay: calc(var(--delay) * 200ms) !important;
+}
+
+/* Counter animation styles */
+.counter-value {
+    display: inline-block;
+    min-width: 50px;
 }
