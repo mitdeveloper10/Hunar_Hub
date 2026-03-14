@@ -188,7 +188,7 @@
                             <div class="card-body">
                                 <h3>${p.name}</h3>
                                 <p class="text-muted small">${p.description || ''}</p>
-                                <p class="fw-bold text-primary">$${p.price}</p>
+                                <p class="fw-bold text-primary">₹${parseFloat(p.price).toFixed(2)}</p>
                             </div>
                         </div>
                     </div>

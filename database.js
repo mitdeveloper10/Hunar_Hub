@@ -11,6 +11,7 @@ const schema = `
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
+    phone TEXT,
     password_hash TEXT NOT NULL,
     role TEXT CHECK(role IN ('customer', 'entrepreneur', 'admin')) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -101,14 +102,21 @@ db.exec(schema);
 
 // Migrations
 try {
-  const columns = db.pragma('table_info(orders)');
-  const hasPaymentMethod = columns.some(c => c.name === 'payment_method');
-  if (!hasPaymentMethod) {
+  // Migration for users table
+  const userColumns = db.pragma('table_info(users)');
+  if (!userColumns.some(c => c.name === 'phone')) {
+    db.prepare('ALTER TABLE users ADD COLUMN phone TEXT').run();
+    console.log('Added phone column to users table');
+  }
+
+  // Migration for orders table
+  const orderColumns = db.pragma('table_info(orders)');
+  if (!orderColumns.some(c => c.name === 'payment_method')) {
     db.prepare('ALTER TABLE orders ADD COLUMN payment_method TEXT').run();
     console.log('Added payment_method column to orders table');
   }
 } catch (err) {
-  console.error('Error migrating orders table:', err);
+  console.error('Database migration error:', err);
 }
 
 module.exports = db;

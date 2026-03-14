@@ -4,46 +4,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - HunarHub</title>
+    <title>Admin Dashboard | HunarHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="/css/style.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: var(--bg-main);
+        }
+        .admin-sidebar {
+            width: 250px;
+            background-color: white;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        .admin-main {
+            margin-left: 250px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .sidebar-header {
+            padding: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar-nav {
+            padding: 1rem 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .sidebar .nav-link {
+            color: #64748b;
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #f8fafc;
+            color: var(--primary-color);
+        }
+        .sidebar .nav-link.active {
+            color: var(--primary-color);
+            background-color: var(--primary-light);
+            border-left-color: var(--primary-color);
+        }
+        .admin-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            border: 0;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .admin-card-header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1.25rem 1.5rem;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
 
 <body>
+    
+    <!-- Mobile Toggle -->
+    <div class="d-md-none bg-white p-3 border-bottom d-flex justify-content-between align-items-center sticky-top">
+        <h5 class="fw-bold mb-0 text-heading">HunarHub Admin</h5>
+        <button class="btn btn-outline-primary btn-sm" onclick="document.getElementById('sidebar').classList.toggle('show')"><i class="bi bi-list"></i> Menu</button>
+    </div>
+
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            HunarHub Admin
+    <div class="sidebar admin-sidebar shadow-sm" id="sidebar">
+        <div class="sidebar-header bg-primary text-white border-0">
+            <i class="bi bi-shield-lock-fill me-2 bg-white text-primary rounded-circle p-1 px-2"></i> HunarHub<span class="text-white-50">Admin</span>
         </div>
-        <a href="#" class="nav-link active" onclick="showSection('dashboard', this)">
-            <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
-        </a>
-        <a href="#" class="nav-link" onclick="showSection('users', this)">
-            <i class="bi bi-people"></i> <span>Users</span>
-        </a>
-        <a href="#" class="nav-link" onclick="showSection('entrepreneurs', this)">
-            <i class="bi bi-shop"></i> <span>Entrepreneurs</span>
-        </a>
-        <a href="#" class="nav-link" onclick="showSection('orders', this)">
-            <i class="bi bi-cart"></i> <span>Orders</span>
-        </a>
-        <a href="#" class="nav-link" onclick="showSection('requests', this)">
-            <i class="bi bi-tools"></i> <span>Requests</span>
-        </a>
-        <a href="#" class="nav-link" onclick="showSection('feedback', this)">
-            <i class="bi bi-chat-left-dots"></i> <span>Feedback</span>
-        </a>
-        <hr class="text-secondary mx-3">
-        <a href="#" class="nav-link text-danger" onclick="logout()">
-            <i class="bi bi-box-arrow-right"></i> <span>Logout</span>
-        </a>
+        <div class="sidebar-nav">
+            <a href="#" class="nav-link active" onclick="showSection('dashboard', this)">
+                <i class="bi bi-grid-1x2-fill"></i> <span>Platform Overview</span>
+            </a>
+            <div class="text-xs fw-bold text-uppercase text-muted px-4 mt-4 mb-2" style="font-size: 0.7rem; letter-spacing: 1px;">Management</div>
+            <a href="#" class="nav-link" onclick="showSection('users', this)">
+                <i class="bi bi-people-fill"></i> <span>Customers</span>
+            </a>
+            <a href="#" class="nav-link" onclick="showSection('entrepreneurs', this)">
+                <i class="bi bi-shop-window"></i> <span>Entrepreneurs</span>
+            </a>
+            <div class="text-xs fw-bold text-uppercase text-muted px-4 mt-4 mb-2" style="font-size: 0.7rem; letter-spacing: 1px;">Activity</div>
+            <a href="#" class="nav-link" onclick="showSection('orders', this)">
+                <i class="bi bi-bag-check-fill"></i> <span>Market Orders</span>
+            </a>
+            <a href="#" class="nav-link" onclick="showSection('requests', this)">
+                <i class="bi bi-tools"></i> <span>Service Requests</span>
+            </a>
+            <a href="#" class="nav-link" onclick="showSection('feedback', this)">
+                <i class="bi bi-star-fill"></i> <span>Reviews & Feedback</span>
+            </a>
+        </div>
+        <div class="mt-auto p-3 border-top">
+            <a href="#" class="btn btn-light text-danger w-100 fw-bold d-flex justify-content-center align-items-center" onclick="logout()">
+                <i class="bi bi-box-arrow-right me-2"></i> Logout
+            </a>
+        </div>
     </div>
 
     <!-- Main Content -->
     <div class="admin-main">
-        <div id="content">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom d-none d-md-flex">
+            <h4 class="fw-bold text-heading mb-0" id="currentSectionTitle">Platform Overview</h4>
+            <div class="d-flex align-items-center">
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle rounded-pill px-3 py-2"><i class="bi bi-shield-check me-1"></i> System Administrator</span>
+            </div>
+        </div>
+
+        <div id="content" class="animate-fade-in">
             <!-- Sections will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Loading Spinner (Hidden by default) -->
+    <div id="globalLoader" class="position-fixed top-50 start-50 translate-middle d-none" style="z-index: 9999;">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
     </div>
 
@@ -57,51 +169,59 @@
 
         const sections = {
             dashboard: `
-                <h2 class="mb-4">Platform Overview</h2>
-                <div class="row mb-5" id="statsRow">
-                    <div class="col-md-3">
-                        <div class="card bg-primary text-white text-center p-3 mb-3">
-                            <h3>Users</h3>
-                            <h2 id="userCount">-</h2>
+                <div class="row g-4 mb-5" id="statsRow">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="admin-card text-center p-4 border-bottom border-primary border-4 h-100">
+                            <i class="bi bi-people d-block fs-1 text-primary opacity-50 mb-2"></i>
+                            <h6 class="text-uppercase fw-bold text-muted mb-1" style="font-size:0.8rem;">Total Users</h6>
+                            <h2 id="userCount" class="fw-bold text-heading mb-0">-</h2>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card bg-success text-white text-center p-3 mb-3">
-                            <h3>Entrepreneurs</h3>
-                            <h2 id="entCount">-</h2>
-                            <small>Pending: <span id="pendingCount">-</span></small>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="admin-card text-center p-4 border-bottom border-success border-4 h-100 position-relative">
+                            <i class="bi bi-shop d-block fs-1 text-success opacity-50 mb-2"></i>
+                            <h6 class="text-uppercase fw-bold text-muted mb-1" style="font-size:0.8rem;">Entrepreneurs</h6>
+                            <h2 id="entCount" class="fw-bold text-heading mb-0">-</h2>
+                            <div class="position-absolute top-0 end-0 mt-3 me-3">
+                                <span class="badge bg-warning text-dark border shadow-sm rounded-pill" title="Pending Verification">
+                                    <i class="bi bi-hourglass-split"></i> <span id="pendingCount">-</span>
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card bg-warning text-dark text-center p-3 mb-3">
-                            <h3>Orders</h3>
-                            <h2 id="orderCount">-</h2>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="admin-card text-center p-4 border-bottom border-warning border-4 h-100">
+                            <i class="bi bi-bag-check d-block fs-1 text-warning opacity-50 mb-2"></i>
+                            <h6 class="text-uppercase fw-bold text-muted mb-1" style="font-size:0.8rem;">Total Orders</h6>
+                            <h2 id="orderCount" class="fw-bold text-heading mb-0">-</h2>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card bg-info text-white text-center p-3 mb-3">
-                            <h3>Requests</h3>
-                            <h2 id="reqCount">-</h2>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="admin-card text-center p-4 border-bottom border-info border-4 h-100">
+                            <i class="bi bi-tools d-block fs-1 text-info opacity-50 mb-2"></i>
+                            <h6 class="text-uppercase fw-bold text-muted mb-1" style="font-size:0.8rem;">Total Requests</h6>
+                            <h2 id="reqCount" class="fw-bold text-heading mb-0">-</h2>
                         </div>
                     </div>
                 </div>
 
-                <h3 class="mb-3">Pending Verifications</h3>
-                <div class="card">
-                    <div class="card-body">
+                <div class="admin-card">
+                    <div class="admin-card-header d-flex justify-content-between align-items-center">
+                        <span class="text-danger"><i class="bi bi-exclamation-circle-fill me-2"></i> Action Required: Pending Verifications</span>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-muted">
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Business</th>
-                                        <th>Category</th>
-                                        <th>Email</th>
-                                        <th>Action</th>
+                                        <th class="ps-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Business Details</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Contact</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Category</th>
+                                        <th class="text-end pe-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="verificationTable">
-                                    <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                    <tr><td colspan="4" class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -109,22 +229,23 @@
                 </div>
             `,
             users: `
-                <h2 class="mb-4">Registered Users</h2>
-                <div class="card">
-                    <div class="card-body">
+                <div class="admin-card">
+                    <div class="admin-card-header bg-light d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-people text-primary me-2"></i> Customer Accounts</span>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-muted border-bottom">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Joined At</th>
+                                        <th class="ps-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">ID / Name</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Email</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Role</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Joined Date</th>
                                     </tr>
                                 </thead>
                                 <tbody id="usersTable">
-                                    <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                                    <tr><td colspan="4" class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -132,23 +253,24 @@
                 </div>
             `,
             entrepreneurs: `
-                <h2 class="mb-4">Entrepreneurs Management</h2>
-                <div class="card">
-                    <div class="card-body">
+                <div class="admin-card">
+                    <div class="admin-card-header bg-light d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-shop text-success me-2"></i> Registered Entrepreneurs</span>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-muted border-bottom">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Business Name</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
+                                        <th class="ps-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Business & ID</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Owner Name</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Email</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Status</th>
+                                        <th class="text-end pe-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="entrepreneursTable">
-                                    <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                    <tr><td colspan="5" class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -156,24 +278,24 @@
                 </div>
             `,
             orders: `
-                <h2 class="mb-4">Platform Orders</h2>
-                <div class="card">
-                    <div class="card-body">
+                <div class="admin-card">
+                    <div class="admin-card-header bg-light d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-cart text-warning me-2"></i> Global Market Orders</span>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-muted border-bottom">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Product</th>
-                                        <th>Customer</th>
-                                        <th>Entrepreneur</th>
-                                        <th>Payment</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
+                                        <th class="ps-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Order #</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Product Details</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Participants</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Status</th>
+                                        <th class="text-end pe-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody id="ordersTable">
-                                    <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                                    <tr><td colspan="5" class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -181,23 +303,24 @@
                 </div>
             `,
             requests: `
-                <h2 class="mb-4">Service Requests</h2>
-                <div class="card">
-                    <div class="card-body">
+                <div class="admin-card">
+                    <div class="admin-card-header bg-light d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-tools text-info me-2"></i> Global Service Requests</span>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-muted border-bottom">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Service</th>
-                                        <th>Customer</th>
-                                        <th>Entrepreneur</th>
-                                        <th>Status</th>
-                                        <th>Date</th>
+                                        <th class="ps-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Request #</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Service Details</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Participants</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Status</th>
+                                        <th class="text-end pe-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody id="requestsTable">
-                                    <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                    <tr><td colspan="5" class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -205,23 +328,24 @@
                 </div>
             `,
             feedback: `
-                <h2 class="mb-4">Customer Feedback</h2>
-                <div class="card">
-                    <div class="card-body">
+                <div class="admin-card">
+                    <div class="admin-card-header bg-light d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-star-fill text-warning me-2"></i> Ratings & Reviews</span>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-muted border-bottom">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Customer</th>
-                                        <th>Entrepreneur</th>
-                                        <th>Rating</th>
-                                        <th>Comment</th>
-                                        <th>Date</th>
+                                        <th class="ps-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Rating</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Feedback</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">From (Customer)</th>
+                                        <th class="fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">To (Business)</th>
+                                        <th class="text-end pe-4 fw-medium text-uppercase border-top-0" style="font-size: 0.8rem">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody id="feedbackTable">
-                                    <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                    <tr><td colspan="5" class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span> Loading...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -231,11 +355,19 @@
         };
 
         function showSection(section, el) {
-            // Update Active Link
-            document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
-            if (el) el.classList.add('active');
+            // Mobile close sidebar
+            document.getElementById('sidebar').classList.remove('show');
 
-            // Load Content
+            // Update Active Link & Title
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+            if (el) {
+                el.classList.add('active');
+                document.getElementById('currentSectionTitle').innerText = el.innerText;
+            } else {
+                document.getElementById('currentSectionTitle').innerText = 'Platform Overview';
+            }
+
+            // Load Content HTML
             document.getElementById('content').innerHTML = sections[section];
 
             // Trigger Data Load
@@ -273,16 +405,23 @@
                 const list = await res.json();
                 const tbody = document.getElementById('verificationTable');
                 if (list.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No pending verifications.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted"><i class="bi bi-shield-check fs-1 d-block opacity-25 mb-2"></i> All entrepreneurs are verified.</td></tr>';
                     return;
                 }
                 tbody.innerHTML = list.map(e => `
                     <tr>
-                        <td>${e.name}</td>
-                        <td>${e.business_name}</td>
-                        <td>${e.category}</td>
-                        <td>${e.email}</td>
-                        <td><button class="btn btn-sm btn-success" onclick="verifyEntrepreneur(${e.id})">Verify</button></td>
+                        <td class="ps-4">
+                            <div class="fw-bold text-heading text-primary">${e.business_name}</div>
+                            <div class="text-muted small">ID: #${e.id}</div>
+                        </td>
+                        <td>
+                            <div class="fw-medium">${e.name}</div>
+                            <div class="text-muted small"><a href="mailto:${e.email}" class="text-decoration-none">${e.email}</a></div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">${e.category}</span></td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-success rounded-pill px-3 shadow-sm" onclick="verifyEntrepreneur(${e.id})"><i class="bi bi-check-circle me-1"></i> Approve</button>
+                        </td>
                     </tr>
                 `).join('');
             } catch (err) { console.error(err); }
@@ -295,11 +434,13 @@
                 const tbody = document.getElementById('usersTable');
                 tbody.innerHTML = users.map(u => `
                     <tr>
-                        <td>${u.id}</td>
-                        <td>${u.name}</td>
-                        <td>${u.email}</td>
-                        <td><span class="badge ${u.role === 'admin' ? 'bg-danger' : 'bg-primary'}">${u.role}</span></td>
-                        <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                        <td class="ps-4">
+                            <div class="fw-bold text-heading">${u.name}</div>
+                            <div class="text-muted small">ID: #${u.id}</div>
+                        </td>
+                        <td><a href="mailto:${u.email}" class="text-decoration-none">${u.email}</a></td>
+                        <td><span class="badge ${u.role === 'admin' ? 'bg-danger bg-opacity-10 text-danger border border-danger-subtle' : 'bg-primary bg-opacity-10 text-primary border border-primary-subtle'} rounded-pill px-3">${u.role.toUpperCase()}</span></td>
+                        <td class="text-muted small">${new Date(u.created_at).toLocaleDateString(undefined, {year: 'numeric', month:'short', day:'numeric'})}</td>
                     </tr>
                 `).join('');
             } catch (err) { console.error(err); }
@@ -312,13 +453,19 @@
                 const tbody = document.getElementById('entrepreneursTable');
                 tbody.innerHTML = list.map(e => `
                     <tr>
-                        <td>${e.id}</td>
-                        <td>${e.business_name}</td>
-                        <td>${e.name}</td>
-                        <td>${e.email}</td>
-                        <td><span class="badge ${e.verified ? 'bg-success' : 'bg-warning text-dark'}">${e.verified ? 'Verified' : 'Pending'}</span></td>
+                        <td class="ps-4">
+                            <div class="fw-bold text-heading">${e.business_name}</div>
+                            <div class="text-muted small">ID: #${e.id}</div>
+                        </td>
+                        <td class="fw-medium">${e.name}</td>
+                        <td><a href="mailto:${e.email}" class="text-decoration-none small">${e.email}</a></td>
                         <td>
-                            ${!e.verified ? `<button class="btn btn-sm btn-success" onclick="verifyEntrepreneur(${e.id})">Verify</button>` : 'N/A'}
+                            <span class="badge ${e.verified ? 'bg-success text-white' : 'bg-warning text-dark border border-warning'} rounded-pill px-2">
+                                <i class="bi ${e.verified ? 'bi-patch-check-fill' : 'bi-hourglass-split'} me-1"></i>${e.verified ? 'Verified' : 'Pending'}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            ${!e.verified ? `<button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="verifyEntrepreneur(${e.id})">Approve</button>` : '<span class="text-muted small d-inline-block px-3">Reviewed</span>'}
                         </td>
                     </tr>
                 `).join('');
@@ -330,15 +477,23 @@
                 const res = await fetch('/api/admin/orders');
                 const orders = await res.json();
                 const tbody = document.getElementById('ordersTable');
+                if (orders.length === 0) {
+                     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No orders found.</td></tr>';
+                     return;
+                }
                 tbody.innerHTML = orders.map(o => `
                     <tr>
-                        <td>#${o.id}</td>
-                        <td>${o.product_name}</td>
-                        <td>${o.customer_name}</td>
-                        <td>${o.entrepreneur_name}</td>
-                        <td>${o.payment_method || 'N/A'}</td>
-                        <td><span class="badge bg-info text-dark">${o.status}</span></td>
-                        <td>${new Date(o.created_at).toLocaleDateString()}</td>
+                        <td class="ps-4 fw-bold text-muted small">#${o.id}</td>
+                        <td>
+                            <div class="fw-bold text-heading text-truncate" style="max-width:200px;">${o.product_name}</div>
+                            <span class="badge bg-light text-dark border">${o.payment_method || 'N/A'}</span>
+                        </td>
+                        <td>
+                            <div class="small"><span class="text-muted">By:</span> ${o.customer_name}</div>
+                            <div class="small"><span class="text-muted">From:</span> <i class="bi bi-shop"></i> ${o.entrepreneur_name}</div>
+                        </td>
+                        <td><span class="badge ${o.status === 'completed' || o.status === 'delivered' ? 'bg-success' : 'bg-primary'}">${o.status.toUpperCase()}</span></td>
+                        <td class="text-end pe-4 text-muted small">${new Date(o.created_at).toLocaleDateString()}</td>
                     </tr>
                 `).join('');
             } catch (err) { console.error(err); }
@@ -349,14 +504,22 @@
                 const res = await fetch('/api/admin/requests');
                 const requests = await res.json();
                 const tbody = document.getElementById('requestsTable');
+                if (requests.length === 0) {
+                     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No requests found.</td></tr>';
+                     return;
+                }
                 tbody.innerHTML = requests.map(r => `
                     <tr>
-                        <td>#${r.id}</td>
-                        <td>${r.service_name}</td>
-                        <td>${r.customer_name}</td>
-                        <td>${r.entrepreneur_name}</td>
-                        <td><span class="badge bg-secondary">${r.status}</span></td>
-                        <td>${new Date(r.request_date).toLocaleDateString()}</td>
+                        <td class="ps-4 fw-bold text-muted small">#${r.id}</td>
+                        <td>
+                            <div class="fw-bold text-heading text-truncate" style="max-width:200px;">${r.service_name}</div>
+                        </td>
+                        <td>
+                            <div class="small"><span class="text-muted">For:</span> ${r.customer_name}</div>
+                            <div class="small"><span class="text-muted">Provider:</span> <i class="bi bi-tools"></i> ${r.entrepreneur_name}</div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">${r.status.toUpperCase()}</span></td>
+                        <td class="text-end pe-4 text-muted small">${new Date(r.request_date).toLocaleDateString()}</td>
                     </tr>
                 `).join('');
             } catch (err) { console.error(err); }
@@ -367,41 +530,50 @@
                 const res = await fetch('/api/admin/reviews');
                 const reviews = await res.json();
                 const tbody = document.getElementById('feedbackTable');
+                if (reviews.length === 0) {
+                     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No feedback yet.</td></tr>';
+                     return;
+                }
                 tbody.innerHTML = reviews.map(r => `
                     <tr>
-                        <td>#${r.id}</td>
-                        <td>${r.customer_name}</td>
-                        <td>${r.business_name}</td>
-                        <td><span class="text-warning">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span></td>
-                        <td>${r.comment}</td>
-                        <td>${new Date(r.created_at).toLocaleDateString()}</td>
+                        <td class="ps-4">
+                            <span class="text-warning fs-6 lh-1 d-block">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+                            <span class="badge bg-light text-dark border mt-1">${r.rating}.0 / 5</span>
+                        </td>
+                        <td>
+                            <div class="fst-italic text-muted" style="max-width: 250px; white-space: normal;">"${r.comment}"</div>
+                        </td>
+                        <td class="fw-medium">${r.customer_name}</td>
+                        <td class="text-muted"><i class="bi bi-shop me-1"></i>${r.business_name}</td>
+                        <td class="text-end pe-4 text-muted small">${new Date(r.created_at).toLocaleDateString()}</td>
                     </tr>
                 `).join('');
             } catch (err) { console.error(err); }
         }
 
         async function verifyEntrepreneur(id) {
-            if (!confirm('Verify this entrepreneur?')) return;
+            if (!confirm('Are you sure you want to verify this entrepreneur? This will allow their products to be visible in the marketplace.')) return;
+            
             try {
                 const res = await fetch(`/api/admin/verify/${id}`, { method: 'POST' });
                 if (res.ok) {
-                    alert('Verified!');
-                    // Refresh current view if needed
+                    // Quick refresh of current active section
                     const activeLink = document.querySelector('.sidebar .nav-link.active');
-                    if (activeLink.innerText.includes('Dashboard')) {
+                    if (activeLink.innerText.includes('Overview')) {
                         loadStats();
                         loadPending();
                     } else if (activeLink.innerText.includes('Entrepreneurs')) {
                         loadEntrepreneurs();
                     }
-                } else alert('Failed to verify');
+                } else alert('Failed to verify due to server error.');
             } catch (err) { console.error(err); }
         }
 
         async function logout() {
+            if(!confirm("Are you sure you want to log out?")) return;
             await fetch('/api/logout', { method: 'POST' });
             localStorage.removeItem('user');
-            window.location.href = '/index.html';
+            window.location.href = '/login.html';
         }
 
         // Initialize with Dashboard
