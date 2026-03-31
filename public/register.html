@@ -4,186 +4,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Micro-Entrepreneur Platform</title>
+    <title>Create Account | HunarHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="/css/style.css" rel="stylesheet">
     <script src="/js/toasts.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        .split-layout { min-height: 100vh; display: flex; }
+        .split-brand {
+            width: 45%;
+            background: linear-gradient(135deg, var(--clr-dark) 0%, var(--clr-primary) 100%);
+            color: white;
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+        .split-brand::before {
+            content: ''; position: absolute; bottom: -20%; right: -20%; width: 60%; height: 60%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); border-radius: 50%;
+        }
+        .split-form {
+            width: 60%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            padding: 4rem 2rem;
+            position: relative;
+        }
+        .auth-container { max-width: 600px; width: 100%; opacity: 0; animation: slideUp 0.6s forwards; }
+        
+        @media (max-width: 991px) {
+            .split-layout { flex-direction: column; }
+            .split-brand { width: 100%; padding: 3rem 2rem; height: auto; min-height: 250px; text-align: center; position: relative; }
+            .split-form { width: 100%; padding: 3rem 1rem; }
+            .brand-logo { justify-content: center; }
+        }
+
+        .back-link {
+            position: absolute; top: 2rem; right: 2rem; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: var(--transition-fast);
+        }
+        .back-link:hover { color: var(--primary-color); transform: translateX(-5px); }
+        .business-section {
+            background: #f8fafc; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border-color); margin-top: 1.5rem;
+        }
+    </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm border-0">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/">Hunar-Hub</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="/explore.html">Explore</a></li>
-                    <li class="nav-item"><a class="btn btn-light text-primary" href="/login.html">Login</a></li>
-                </ul>
+    <div class="split-layout">
+        <div class="split-brand">
+            <!-- Professional Navbar - Changed from fixed-top to absolute -->
+            <nav class="navbar navbar-expand-lg absolute-top py-4 px-4 px-lg-0">
+                <div class="container d-flex justify-content-between align-items-center">
+                    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white mb-0" href="/">
+                        <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px; color: white !important;">
+                            <i class="bi bi-layers-half"></i>
+                        </div>
+                        HunarHub<span class="text-white opacity-50">.</span>
+                    </a>
+                    <a href="/login.html" class="btn btn-outline-light btn-sm px-4 border-white border-opacity-20 shadow-sm" style="backdrop-filter: blur(5px);">Sign In</a>
+                </div>
+            </nav>
+            <div class="position-relative z-index-1 mt-5">
+                <h1 class="display-5 fw-bold mb-3">Join the Community</h1>
+                <p class="lead" style="color: #A69080;">Whether you are looking to shop locally sourced products or setup your digital storefront, HunarHub is where it all begins.</p>
             </div>
         </div>
-    </nav>
 
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="card p-4 shadow-sm border-0">
-                    <h2 class="text-center mb-4 fw-bold">Create Account</h2>
-                    <form id="registerForm">
-                        <div class="mb-3">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" name="name" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email Address</label>
-                            <div class="input-group">
-                                <input type="email" name="email" class="form-control" id="emailInput" required>
-                                <button class="btn btn-outline-primary" type="button" id="sendOtpBtn"
-                                    onclick="sendOtp()">Send OTP</button>
+        <div class="split-form">
+            <a href="/" class="back-link d-none d-md-flex align-items-center gap-2"><i class="bi bi-arrow-left"></i> Home</a>
+            
+            <div class="auth-container">
+                <div class="mb-5 pb-2">
+                    <h3 class="fw-bold text-heading mb-2">Create Account</h3>
+                    <p class="text-muted small">Let's get you set up to explore or sell.</p>
+                </div>
+                
+                <form id="registerForm">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2" style="letter-spacing: 0.1em;">Full Name</label>
+                            <div class="input-group glass-pane border rounded-lg shadow-sm overflow-hidden">
+                                <span class="input-group-text bg-transparent border-0 ps-3 text-muted"><i class="bi bi-person"></i></span>
+                                <input type="text" name="name" class="form-control border-0 bg-transparent shadow-none py-2" placeholder="John Doe" required>
                             </div>
                         </div>
-                        <div class="mb-3" id="otpSection" style="display: none;">
-                            <label class="form-label text-primary fw-bold">Enter 6-Digit OTP</label>
-                            <input type="text" name="otp_code" class="form-control border-primary" placeholder="XXXXXX"
-                                maxlength="6">
-                            <small class="text-muted">Check your email (simulation logs) for the code.</small>
+                        
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2" style="letter-spacing: 0.1em;">Email Address</label>
+                            <div class="input-group glass-pane border rounded-lg shadow-sm overflow-hidden p-1">
+                                <span class="input-group-text bg-transparent border-0 ps-2 text-muted"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="email" class="form-control border-0 bg-transparent shadow-none py-2" id="emailInput" placeholder="name@example.com" required>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <div class="input-group">
-                                <input type="password" name="password" id="passwordInput" class="form-control" required>
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                    <i class="bi bi-eye"></i> Show
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase mb-2" style="letter-spacing: 0.1em;">Security Password</label>
+                            <div class="input-group glass-pane border rounded-lg shadow-sm overflow-hidden">
+                                <span class="input-group-text bg-transparent border-0 ps-3 text-muted"><i class="bi bi-lock"></i></span>
+                                <input type="password" name="password" id="passwordInput" class="form-control border-0 bg-transparent shadow-none py-2" placeholder="••••••••" required>
+                                <button class="btn btn-link text-muted px-3 border-0 shadow-none" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
                                 </button>
                             </div>
-                            <small class="text-muted">Must be 8+ chars, with uppercase, number, & special char.</small>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">I am a...</label>
-                            <select name="role" id="roleSelect" class="form-select" required
-                                onchange="toggleEntrepreneurFields()">
-                                <option value="customer">Customer</option>
-                                <option value="entrepreneur">Entrepreneur</option>
-                            </select>
                         </div>
 
-                        <!-- Entrepreneur Fields -->
-                        <div id="entrepreneurFields" style="display: none;">
-                            <h5 class="mt-4 mb-3 border-bottom pb-2">Business Details</h5>
-                            <div class="mb-3">
-                                <label class="form-label">Business Name</label>
-                                <input type="text" name="business_name" class="form-control">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Category</label>
-                                <select name="category" class="form-select">
-                                    <option value="Handicrafts">Handicrafts</option>
-                                    <option value="Food">Food & Beverage</option>
-                                    <option value="Services">Services</option>
-                                    <option value="Art">Art & Design</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Location</label>
-                                <input type="text" name="location" class="form-control" placeholder="City, State">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Bio / Description</label>
-                                <textarea name="bio" class="form-control" rows="3"></textarea>
+                        <div class="col-12 mt-4">
+                            <label class="form-label fw-bold text-heading fs-6 mb-3">Select Your Role</label>
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <label class="w-100">
+                                        <input type="radio" name="role" value="customer" class="btn-check" onchange="toggleEntrepreneurFields()" checked required>
+                                        <div class="btn btn-outline-primary w-100 py-3 rounded-lg border-2 d-flex flex-column align-items-center gap-2">
+                                            <i class="bi bi-bag-heart fs-4"></i>
+                                            <span class="fw-bold small text-uppercase">Shopper</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="col-6">
+                                    <label class="w-100">
+                                        <input type="radio" name="role" value="entrepreneur" class="btn-check" onchange="toggleEntrepreneurFields()" required>
+                                        <div class="btn btn-outline-primary w-100 py-3 rounded-lg border-2 d-flex flex-column align-items-center gap-2">
+                                            <i class="bi bi-shop fs-4"></i>
+                                            <span class="fw-bold small text-uppercase">Creator</span>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="d-grid shadow-sm">
-                            <button type="submit" class="btn btn-primary">Register</button>
+                        <div class="col-12 business-section mt-4 p-4 border rounded-xl" id="entrepreneurFields" style="display: none;">
+                            <h6 class="fw-bold text-heading mb-3"><i class="bi bi-briefcase text-primary me-2"></i> Creator Profile</h6>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <input type="text" name="business_name" class="form-control py-2" placeholder="Business or Brand Name">
+                                </div>
+                                <div class="col-md-6">
+                                    <select name="category" class="form-select py-2">
+                                        <option value="Handicrafts">Handicrafts</option>
+                                        <option value="Food">Food & Beverage</option>
+                                        <option value="Services">Services</option>
+                                        <option value="Art">Art & Design</option>
+                                        <option value="Other">Other Category</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="location" class="form-control py-2" placeholder="Primary Location">
+                                </div>
+                                <div class="col-12">
+                                    <textarea name="bio" class="form-control" rows="3" placeholder="Short introduction for your profile..."></textarea>
+                                </div>
+                            </div>
                         </div>
-                        <p class="text-center mt-3">Already have an account? <a href="/login.html">Login</a></p>
-                    </form>
+
+                        <div class="col-12 mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3 shadow-lg">
+                                Create Account <i class="bi bi-arrow-right-short ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="text-muted small mb-0">Already have an account? <a href="/login.html" class="text-primary fw-bold text-decoration-none ms-1">Sign In</a></p>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function toggleEntrepreneurFields() {
-            const role = document.getElementById('roleSelect').value;
+            const isEnt = document.querySelector('input[name="role"]:checked').value === 'entrepreneur';
             const fields = document.getElementById('entrepreneurFields');
-            fields.style.display = role === 'entrepreneur' ? 'block' : 'none';
+            fields.style.display = isEnt ? 'block' : 'none';
         }
 
-        async function sendOtp() {
-            const email = document.getElementById('emailInput').value;
-            if (!email) return showToast('Please enter email first', 'error');
 
-            const btn = document.getElementById('sendOtpBtn');
-            btn.disabled = true;
-            btn.innerText = 'Sending...';
 
-            try {
-                const response = await fetch('/api/otp/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-
-                if (response.ok) {
-                    showToast('OTP sent! Check your email (console logs)', 'success');
-                    document.getElementById('otpSection').style.display = 'block';
-                    btn.innerText = 'Resend OTP';
-                } else {
-                    const res = await response.json();
-                    showToast(res.error || 'Failed to send OTP', 'error');
-                    btn.innerText = 'Send OTP';
-                }
-            } catch (err) {
-                console.error(err);
-                showToast('Error sending OTP', 'error');
-                btn.innerText = 'Send OTP';
-            } finally {
-                btn.disabled = false;
-            }
-        }
-
-        // Password Toggle
         const togglePassword = document.getElementById('togglePassword');
         const passwordInput = document.getElementById('passwordInput');
 
-        togglePassword.addEventListener('click', function () {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i> Show' : '<i class="bi bi-eye-slash"></i> Hide';
-        });
+        if(togglePassword) {
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+            });
+        }
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
 
-            // Validation
             const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
             const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
             if (!emailRegex.test(data.email)) {
-                showToast('Invalid email format. Must contain @, ., and alphanumeric characters.', 'error');
-                return;
+                return showToast('Invalid email format.', 'error');
             }
-
             if (!passwordRegex.test(data.password)) {
-                showToast('Password must be at least 8 chars, include 1 uppercase, 1 number, and 1 special char.', 'error');
-                return;
+                return showToast('Password does not meet the security requirements.', 'error');
             }
-
             if (data.role === 'entrepreneur' && !data.business_name) {
-                return showToast('Business name is required for entrepreneurs', 'error');
+                return showToast('Business name is required for entrepreneurs.', 'error');
             }
 
-            if (!data.otp_code) {
-                return showToast('Please verify your email via OTP first', 'error');
-            }
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+            btn.disabled = true;
 
             try {
                 const response = await fetch('/api/register', {
@@ -194,59 +232,66 @@
 
                 const result = await response.json();
                 if (response.ok) {
-                    showToast('Registration successful! Please login.', 'success');
-                    setTimeout(() => window.location.href = '/login.html', 1500);
+                    showToast('Account created successfully! Check your email.', 'success');
+                    setTimeout(() => window.location.href = `/verify-otp.html?email=${encodeURIComponent(data.email)}`, 1500);
                 } else {
                     showToast(result.error || 'Registration failed', 'error');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
                 }
             } catch (err) {
                 console.error(err);
-                showToast('An error occurred', 'error');
+                showToast('A network error occurred', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         });
     </script>
     <footer class="footer">
         <div class="container">
             <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h5>Hunar-Hub</h5>
-                    <p>Empowering local artisans and micro-entrepreneurs by connecting them with a wider community.
-                        Discover, support, and grow together.</p>
-                </div>
-                <div class="col-md-2 mb-4 col-6">
-                    <h5>Quick Links</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/explore.html">Explore</a></li>
-                        <li><a href="/register.html">Get Started</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-2 mb-4 col-6">
-                    <h5>Support</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <h5>Follow Us</h5>
+                <div class="col-lg-4 mb-5 mb-lg-0">
+                    <div class="footer-logo mb-3"><i class="bi bi-layers-half"></i> HunarHub<span>.</span></div>
+                    <p class="text-white text-opacity-50 pe-lg-5">Empowering local artisans and micro-entrepreneurs by connecting them with a wider community. Discover, support, and grow together.</p>
                     <div class="social-links">
                         <a href="#"><i class="bi bi-facebook"></i></a>
                         <a href="#"><i class="bi bi-twitter-x"></i></a>
                         <a href="#"><i class="bi bi-instagram"></i></a>
                         <a href="#"><i class="bi bi-linkedin"></i></a>
                     </div>
-                    <p class="mt-3 text-muted"><i class="bi bi-geo-alt-fill me-2"></i> Local Community, Worldwide impact
-                    </p>
+                </div>
+                <div class="col-md-4 col-lg-2 mb-4 mb-md-0 ms-lg-auto">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/explore.html">Explore</a></li>
+                        <li><a href="/register.html">Get Started</a></li>
+                        <li><a href="/login.html">Sign In</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 col-lg-2 mb-4 mb-md-0">
+                    <h5>Support</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="/help-center.html">Help Center</a></li>
+                        <li><a href="/safety-center.html">Safety Center</a></li>
+                        <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="/terms-of-service.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <h5>Stay Updated</h5>
+                    <p class="text-white text-opacity-50 small">Join our newsletter to discover new local talent every week.</p>
+                    <div class="newsletter-group">
+                        <input type="email" class="form-control shadow-none" placeholder="Email address">
+                        <button class="btn btn-primary" type="button" onclick="showToast('Thank you for subscribing!', 'success')">Subscribe</button>
+                    </div>
                 </div>
             </div>
-            <div class="footer-bottom text-center">
-                <p>&copy; 2024 Hunar-Hub. All Rights Reserved. Created by Supporting Local Talent.</p>
+            <div class="footer-bottom">
+                <p>&copy; 2026 HunarHub. All Rights Reserved.</p>
+                <p>Designed to empower <i class="bi bi-heart-fill heart-icon"></i> local communities</p>
             </div>
         </div>
     </footer>
-
 </body>
-
 </html>

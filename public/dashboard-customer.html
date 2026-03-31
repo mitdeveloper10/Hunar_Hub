@@ -4,343 +4,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Dashboard | HunarHub</title>
+    <title>Customer Hub | HunarHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="/css/style.css" rel="stylesheet">
     <script src="/js/toasts.js"></script>
     <style>
-        body { background-color: var(--bg-main); overflow-x: hidden; }
+        .layout-wrapper { display: flex; min-height: 100vh; align-items: stretch; }
+        .sidebar { width: 280px; flex-shrink: 0; position: sticky; top: 0; min-height: 100vh; }
+        .content-area { flex-grow: 1; background: #f1f5f9; padding: 2rem; }
         
-        .dashboard-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-            padding: 120px 0 60px;
-            color: white;
-            position: relative;
-            z-index: 1;
-        }
-
-        .dashboard-header::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 40px;
-            background: var(--bg-main);
-            border-radius: 40px 40px 0 0;
-            z-index: -1;
+        @media (max-width: 991px) {
+            .layout-wrapper { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .content-area { padding: 1.5rem; }
         }
 
         .stat-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(0,0,0,0.02);
-            display: flex;
-            align-items: center;
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
             border-radius: var(--radius-md);
+            padding: 1.5rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-right: 20px;
+            gap: 1rem;
         }
-
-        .split-layout {
-            display: flex;
-            gap: 2rem;
-            margin-top: -30px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .main-column { flex: 1; min-width: 0; }
-        .side-column { width: 350px; flex-shrink: 0; }
-        
-        @media (max-width: 991px) {
-            .split-layout { flex-direction: column; }
-            .side-column { width: 100%; }
-        }
-
-        .floating-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--card-shadow);
-            border: none;
-            overflow: hidden;
-            margin-bottom: 24px;
-        }
-        
-        .floating-card-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid #f1f5f9;
-            background: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .order-item, .request-item {
-            padding: 20px 24px;
-            border-bottom: 1px solid #f8fafc;
-            transition: var(--transition-fast);
-        }
-
-        .order-item:hover, .request-item:hover {
-            background-color: #f8fafc;
-        }
-
-        .order-item:last-child, .request-item:last-child {
-            border-bottom: none;
-        }
-
-        .progress-sm { height: 6px; border-radius: 3px; background-color: #e2e8f0; }
     </style>
 </head>
 
-<body>
-    <!-- Sticky Navbar -->
-    <nav class="navbar navbar-expand-lg fixed-top shadow-sm" style="background: rgba(255,255,255,0.98);">
-        <div class="container">
-            <a class="navbar-brand" href="/">HunarHub<span class="text-primary">.</span></a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="bi bi-list fs-1 text-dark"></i>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="/explore.html">Explore Marketplace</a></li>
-                </ul>
-                <div class="d-flex align-items-center mt-3 mt-lg-0">
-                    <div class="d-flex align-items-center me-4 bg-light rounded-pill px-3 py-2 border">
-                        <i class="bi bi-person-circle fs-5 text-primary me-2"></i>
-                        <span class="fw-bold text-heading" id="welcomeMsg" style="font-size: 0.9rem;">Customer</span>
+<body class="d-flex flex-column min-vh-100">
+    <div class="layout-wrapper flex-grow-1">
+        <!-- SaaS Minimalist Sidebar -->
+        <aside class="sidebar d-flex flex-column p-0 border-end shadow-sm" style="background: #ffffff; border-color: var(--border-color) !important;">
+            <div class="p-4 border-bottom mb-3" style="border-color: var(--border-color) !important;">
+                <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-heading mb-0" href="/">
+                    <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-layers-half"></i>
                     </div>
-                    <button class="btn btn-outline-danger rounded-pill px-4 shadow-sm" onclick="logout()">Logout <i class="bi bi-box-arrow-right ms-1"></i></button>
-                </div>
+                    <div>
+                        <span class="fs-5 d-block text-white">HunarHub</span>
+                        <span class="text-primary small fw-bold" style="letter-spacing: 0.1em; font-size: 0.6rem;">CUSTOMER PORTAL</span>
+                    </div>
+                </a>
             </div>
-        </div>
-    </nav>
+            
+            <div class="sidebar-heading px-4 mb-2" style="color: var(--text-muted);">Marketplace</div>
+            <nav class="nav flex-column flex-grow-1">
+                <a class="nav-link active py-2 my-1" href="#" onclick="switchTab('dashboard', this)"><i class="bi bi-grid-1x2-fill me-3"></i> Dashboard</a>
+                <a class="nav-link py-2 my-1" href="/explore.html"><i class="bi bi-search me-3"></i> Find Talent</a>
+                <a class="nav-link py-2 my-1" href="#" onclick="switchTab('orders', this)"><i class="bi bi-bag-check-fill me-3"></i> My Purchases</a>
+                <a class="nav-link py-2 my-1" href="#" onclick="switchTab('requests', this)"><i class="bi bi-tools me-3"></i> Service Requests</a>
+                
+                <div class="mt-auto p-4">
+                    <a class="nav-link text-danger rounded px-4 py-2 border border-danger border-opacity-10" href="#" onclick="logout()" style="background: rgba(239, 68, 68, 0.05);"><i class="bi bi-box-arrow-left me-2"></i> Log Out</a>
+                </div>
+            </nav>
+        </aside>
 
-    <!-- Prominent Header -->
-    <header class="dashboard-header animate-fade-in">
-        <div class="container">
-            <h1 class="display-5 fw-bold mb-2">My Dashboard</h1>
-            <p class="text-white-50 fs-5">Manage your orders, service requests, and reviews.</p>
-        </div>
-    </header>
-
-    <div class="container pb-5">
-        <div class="split-layout">
-            <!-- Main Content Area (Orders) -->
-            <div class="main-column animate-slide-up" style="animation-delay: 0.1s;">
-                <div class="floating-card">
-                    <div class="floating-card-header">
-                        <h4 class="fw-bold mb-0 text-heading d-flex align-items-center"><i class="bi bi-bag-check-fill text-primary me-2"></i> Order History</h4>
-                        <a href="/explore.html" class="btn btn-sm btn-primary rounded-pill">Shop More</a>
+        <!-- Main Content Column -->
+        <main class="content-area">
+            <header class="d-flex justify-content-between align-items-center mb-5 animate-slide-up">
+                <div>
+                    <h2 class="fw-bold text-heading mb-1">Customer Dashboard</h2>
+                    <p class="text-muted small mb-0">Welcome back, <span class="fw-bold text-primary" id="welcomeMsg">Customer</span></p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-white glass-pane border shadow-sm btn-sm px-3"><i class="bi bi-bell"></i></button>
+                    <div class="bg-white rounded-pill px-3 py-1 border shadow-sm d-flex align-items-center gap-2">
+                        <div class="bg-primary rounded-circle" style="width: 8px; height: 8px;"></div>
+                        <span class="small fw-bold">Active Session</span>
                     </div>
-                    <div id="ordersList" class="p-0">
-                        <div class="text-center py-5">
-                            <span class="spinner-border text-primary" role="status"></span>
-                            <p class="text-muted mt-2">Loading orders...</p>
+                </div>
+            </header>
+            
+            <div id="tab-dashboard" class="tab-pane">
+                <!-- Stats Grid -->
+                <div class="row g-4 mb-5 animate-slide-up" style="animation-delay: 0.1s;">
+                    <div class="col-md-4">
+                        <div class="card stat-card border-0 shadow-sm premium-card">
+                            <div class="bg-primary rounded p-3 text-white shadow-lg" style="background: var(--clr-dark) !important;">
+                                <i class="bi bi-bag-heart-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="fw-bold mb-0" id="stat-order-count">0</h3>
+                                <p class="text-muted small mb-0 fw-medium">Total Purchases</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card stat-card border-0 shadow-sm premium-card">
+                            <div class="bg-secondary rounded p-3 text-white shadow-lg" style="background: var(--clr-primary) !important;">
+                                <i class="bi bi-tools fs-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="fw-bold mb-0" id="stat-request-count">0</h3>
+                                <p class="text-muted small mb-0 fw-medium">Service Requests</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card stat-card border-0 shadow-sm premium-card">
+                            <div class="bg-success rounded p-3 text-white shadow-lg" style="background: var(--clr-muted) !important;">
+                                <i class="bi bi-star-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h3 class="fw-bold mb-0">5.0</h3>
+                                <p class="text-muted small mb-0 fw-medium">Community Trust</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Side Content Area (Services & Stats) -->
-            <div class="side-column animate-slide-up" style="animation-delay: 0.2s;">
-                <div class="floating-card mb-4">
-                    <div class="floating-card-header bg-light">
-                        <h5 class="fw-bold mb-0 text-heading"><i class="bi bi-tools text-accent me-2"></i> Service Requests</h5>
+            <!-- Orders Table Section -->
+            <div id="tab-orders" class="tab-pane d-none">
+                <div class="row g-4 animate-slide-up">
+                    <div class="col-lg-12">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-bag-heart text-primary me-2"></i> My Order Archive</h5>
+                                <button class="btn btn-sm btn-light border" onclick="loadOrders()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th class="ps-4 py-3 small text-muted text-uppercase">Product</th>
+                                                <th class="py-3 small text-muted text-uppercase">Entrepreneur</th>
+                                                <th class="py-3 small text-muted text-uppercase">Status</th>
+                                                <th class="py-3 small text-muted text-uppercase">Payment</th>
+                                                <th class="py-3 small text-muted text-uppercase text-end pe-4">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="ordersList">
+                                            <tr><td colspan="4" class="text-center py-5"><div class="spinner-border text-primary spinner-border-sm"></div></td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div id="requestsList" class="p-0">
-                        <div class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary"></span></div>
-                    </div>
-                </div>
-
-                <div class="floating-card bg-primary text-white text-center p-4" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-hover) 100%);">
-                    <i class="bi bi-star-fill fs-1 text-accent mb-3 d-block"></i>
-                    <h5 class="fw-bold">Your Feedback Matters</h5>
-                    <p class="small text-white-50 mb-0">Reviewing local artisans helps them grow their business and improve their craft.</p>
                 </div>
             </div>
-        </div>
+
+            <!-- Service Requests Section -->
+            <div id="tab-requests" class="tab-pane d-none">
+                <div class="row g-4 animate-slide-up">
+                    <div class="col-lg-12">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h5 class="fw-bold mb-0"><i class="bi bi-tools text-secondary me-2"></i> My Service Flow</h5>
+                            </div>
+                            <div class="card-body p-4" id="requestsList">
+                                <div class="text-center py-4 text-muted small">Loading requests...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
+
+    <footer class="footer">
+        <div class="container">
+                    <div class="row">
+                        <div class="col-lg-4 mb-5 mb-lg-0">
+                            <div class="footer-logo mb-3"><i class="bi bi-layers-half"></i> HunarHub<span>.</span></div>
+                            <p class="text-white text-opacity-50 pe-lg-5">Empowering local artisans and micro-entrepreneurs by connecting them with a wider community. Discover, support, and grow together.</p>
+                            <div class="social-links">
+                                <a href="#"><i class="bi bi-facebook"></i></a>
+                                <a href="#"><i class="bi bi-twitter-x"></i></a>
+                                <a href="#"><i class="bi bi-instagram"></i></a>
+                                <a href="#"><i class="bi bi-linkedin"></i></a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-lg-2 mb-4 mb-md-0 ms-lg-auto">
+                            <h5>Quick Links</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li><a href="/">Home</a></li>
+                                <li><a href="/explore.html">Explore</a></li>
+                                <li><a href="/register.html">Get Started</a></li>
+                                <li><a href="/login.html">Sign In</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 col-lg-2 mb-4 mb-md-0">
+                            <h5>Support</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li><a href="/help-center.html">Help Center</a></li>
+                                <li><a href="/safety-center.html">Safety Center</a></li>
+                                <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+                                <li><a href="/terms-of-service.html">Terms of Service</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4 col-lg-3">
+                            <h5>Stay Updated</h5>
+                            <p class="text-white text-opacity-50 small">Join our newsletter to discover new local talent every week.</p>
+                            <div class="newsletter-group">
+                                <input type="email" class="form-control shadow-none" placeholder="Email address">
+                                <button class="btn btn-primary" type="button" onclick="showToast('Thank you for subscribing!', 'success')">Subscribe</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer-bottom">
+                        <p>&copy; 2026 HunarHub. All Rights Reserved.</p>
+                        <p>Designed to empower <i class="bi bi-heart-fill heart-icon"></i> local communities</p>
+                    </div>
+                </div>
+            </footer>
 
     <!-- Review Modal -->
     <div class="modal fade" id="reviewModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow-lg">
-                <div class="modal-header border-bottom-0 bg-light py-4 px-4 px-md-5">
-                    <h5 class="modal-title fw-bold text-heading d-flex align-items-center"><i class="bi bi-star-fill text-warning me-2"></i> Write a Review</h5>
-                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+            <div class="modal-content overflow-hidden border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white py-4 px-4">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-star-fill text-warning me-2"></i> Rate the Experience</h5>
+                    <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 p-md-5 bg-main">
+                <div class="modal-body p-4 bg-white">
                     <form id="reviewForm">
                         <input type="hidden" id="reviewEntrepreneurId">
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Overall Rating</label>
-                            <select id="reviewRating" class="form-select form-select-lg shadow-none" required>
-                                <option value="5">⭐⭐⭐⭐⭐ (5) Excellent</option>
-                                <option value="4">⭐⭐⭐⭐ (4) Very Good</option>
+                            <label class="form-label fw-bold small text-muted text-uppercase">Rating</label>
+                            <select id="reviewRating" class="form-select border shadow-none" required>
+                                <option value="5">⭐⭐⭐⭐⭐ (5) Perfect</option>
+                                <option value="4">⭐⭐⭐⭐ (4) Great</option>
                                 <option value="3">⭐⭐⭐ (3) Good</option>
                                 <option value="2">⭐⭐ (2) Fair</option>
                                 <option value="1">⭐ (1) Poor</option>
                             </select>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Your Experience</label>
-                            <textarea id="reviewComment" class="form-control shadow-none" rows="4" placeholder="Tell others what you thought of the service or product..." required></textarea>
+                            <label class="form-label fw-bold small text-muted text-uppercase">Feedback</label>
+                            <textarea id="reviewComment" class="form-control border shadow-none" rows="3" placeholder="How was the quality of work?" required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm">Submit Review <i class="bi bi-send ms-2"></i></button>
+                        <button type="submit" class="btn btn-primary w-100 py-2">Submit Review <i class="bi bi-send-fill ms-2"></i></button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer mt-auto pt-5">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4 mb-4">
-                    <h5 class="text-white fw-bold mb-3 fs-3">HunarHub<span class="text-primary">.</span></h5>
-                    <p class="text-white-50">Empowering local artisans and micro-entrepreneurs by connecting them with a wider community.</p>
-                </div>
-                <div class="col-lg-2 col-6 mb-4">
-                    <h6 class="text-white mb-3 fw-bold text-uppercase" style="letter-spacing:1px; font-size:0.8rem;">Quick Links</h6>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="/" class="text-white-50 text-decoration-none">Home</a></li>
-                        <li class="mb-2"><a href="/explore.html" class="text-white-50 text-decoration-none">Explore</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-2 col-6 mb-4">
-                    <h6 class="text-white mb-3 fw-bold text-uppercase" style="letter-spacing:1px; font-size:0.8rem;">Support</h6>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">FAQ</a></li>
-                        <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Contact Us</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-4 mb-4">
-                    <h6 class="text-white mb-3 fw-bold text-uppercase" style="letter-spacing:1px; font-size:0.8rem;">Connect</h6>
-                    <div class="social-links d-flex gap-2">
-                        <a href="#" class="text-white-50"><i class="bi bi-facebook fs-4"></i></a>
-                        <a href="#" class="text-white-50"><i class="bi bi-twitter-x fs-4"></i></a>
-                        <a href="#" class="text-white-50"><i class="bi bi-instagram fs-4"></i></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || user.role !== 'customer') {
-            window.location.href = '/login.html';
-        }
+        if (!user || user.role !== 'customer') { window.location.href = '/login.html'; }
         document.getElementById('welcomeMsg').textContent = user.name;
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.add('d-none'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            const target = document.getElementById('tab-' + tabId);
+            if (target) target.classList.remove('d-none');
+            if (el) el.classList.add('active');
+        }
 
         async function loadOrders() {
             try {
                 const response = await fetch('/api/my-orders');
+                if (response.status === 401 || response.status === 403) return logout();
                 const orders = await response.json();
                 const container = document.getElementById('ordersList');
+                document.getElementById('stat-order-count').textContent = orders.length;
 
                 if (orders.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-5">
-                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                                <i class="bi bi-bag-x fs-1 text-muted opacity-50"></i>
-                            </div>
-                            <h5 class="text-muted fw-bold">No orders yet</h5>
-                            <p class="text-muted mb-0">Start exploring the marketplace to find unique items.</p>
-                        </div>`;
+                    container.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted small">No orders found.</td></tr>';
                     return;
                 }
 
                 container.innerHTML = orders.map(o => {
-                    const progress = getProgress(o.status);
+                    const payStatusClass = o.payment_status === 'Success' ? 'bg-success text-success' : 'bg-warning text-warning';
                     return `
-                    <div class="order-item d-flex flex-column flex-sm-row align-items-sm-center gap-3">
-                        <img src="${o.image_url || 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&q=80&w=150'}" alt="Product" class="rounded-3 shadow-sm object-fit-cover" style="width: 80px; height: 80px;">
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                <h6 class="fw-bold mb-0 text-heading">${o.product_name}</h6>
-                                <span class="badge bg-light text-dark border">#${o.id}</span>
-                            </div>
-                            <div class="text-muted small mb-2"><i class="bi bi-shop me-1"></i> ${o.business_name} &bull; ${new Date(o.created_at).toLocaleDateString()}</div>
-                            
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <div class="progress progress-sm flex-grow-1">
-                                    <div class="progress-bar ${progress.class}" style="width: ${progress.width}%"></div>
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="${o.image_url || 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=100&h=100&fit=crop'}" class="rounded shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                                <div>
+                                    <div class="fw-bold text-heading small">${o.product_name}</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">Order #${o.id}</div>
                                 </div>
-                                <span class="small fw-bold ${progress.textClass} text-uppercase" style="font-size: 0.7rem; width: 75px; text-align: right;">${o.status}</span>
                             </div>
-                        </div>
-                        <div class="d-flex flex-sm-column align-items-end justify-content-between gap-2 ms-sm-3 border-start ps-sm-3">
-                            <div class="fw-bold text-primary fs-5">₹${parseFloat(o.price).toFixed(2)}</div>
-                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm" onclick="openReviewModal(${o.entrepreneur_id})"><i class="bi bi-star-fill me-1"></i> Review</button>
-                        </div>
-                    </div>
+                        </td>
+                        <td class="small text-muted">${o.business_name}</td>
+                        <td><span class="badge ${getStatusClass(o.status)} px-2 py-1">${o.status.toUpperCase()}</span></td>
+                        <td><span class="badge ${payStatusClass} bg-opacity-10 border-0 px-2 py-1 small">${o.payment_status} (${o.payment_method})</span></td>
+                        <td class="text-end pe-4 fw-bold text-primary">₹${parseFloat(o.price).toFixed(2)}</td>
+                    </tr>
                 `}).join('');
-            } catch (err) { console.error('Error loading orders', err); }
+            } catch (err) { console.error(err); }
         }
 
-        function getProgress(status) {
+        function getStatusClass(status) {
             switch (status) {
-                case 'pending': return { width: 25, class: 'bg-warning', textClass: 'text-warning' };
-                case 'accepted': return { width: 50, class: 'bg-info', textClass: 'text-info' };
-                case 'shipped': return { width: 75, class: 'bg-primary', textClass: 'text-primary' };
-                case 'delivered': return { width: 100, class: 'bg-success', textClass: 'text-success' };
-                case 'completed': return { width: 100, class: 'bg-success', textClass: 'text-success' };
-                default: return { width: 10, class: 'bg-secondary', textClass: 'text-secondary' };
+                case 'delivered': case 'completed': return 'bg-success bg-opacity-10 text-success border border-success-subtle';
+                case 'pending': return 'bg-warning bg-opacity-10 text-warning border border-warning-subtle';
+                case 'shipped': case 'accepted': return 'bg-info bg-opacity-10 text-info border border-info-subtle';
+                default: return 'bg-secondary bg-opacity-10 text-dark border border-secondary-subtle';
             }
         }
 
         async function loadServiceRequests() {
             try {
                 const response = await fetch('/api/service-requests');
+                if (response.status === 401 || response.status === 403) return logout();
                 const requests = await response.json();
                 const container = document.getElementById('requestsList');
+                document.getElementById('stat-request-count').textContent = requests.length;
 
                 if (requests.length === 0) {
-                    container.innerHTML = '<div class="text-center py-4 text-muted small px-3">You have no active service requests.</div>';
+                    container.innerHTML = '<div class="text-center py-4 text-muted small">No active requests.</div>';
                     return;
                 }
 
                 container.innerHTML = requests.map(r => `
-                    <div class="request-item">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0 text-heading text-truncate pe-2">${r.service_name}</h6>
-                            <span class="badge ${getStatusBadge(r.status)} rounded-pill" style="font-size: 0.7rem;">${r.status.toUpperCase()}</span>
+                    <div class="bg-light bg-opacity-50 p-3 rounded mb-3 border border-dashed text-dark">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-bold small text-truncate pe-2">${r.service_name}</div>
+                            <span class="badge bg-white text-dark small border px-2 py-0" style="font-size: 0.6rem;">${r.status}</span>
                         </div>
-                        <div class="text-muted small mb-2"><i class="bi bi-person-workspace me-1"></i> ${r.business_name}</div>
-                        <p class="small text-muted mb-3 bg-main p-2 rounded-2 border" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${r.details || 'No additional details provided.'}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="small text-muted fw-medium">${new Date(r.request_date).toLocaleDateString()}</span>
-                            <button class="btn btn-sm btn-light text-primary fw-bold" onclick="openReviewModal(${r.entrepreneur_id})">Review Pro</button>
+                        <div class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-briefcase me-1"></i> ${r.business_name}</div>
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-secondary border-opacity-10">
+                            <span class="text-muted" style="font-size: 0.7rem;">${new Date(r.request_date).toLocaleDateString()}</span>
+                            <button class="btn btn-sm btn-outline-secondary py-0 px-2 fw-medium" style="font-size: 0.7rem;" onclick="openReviewModal(${r.entrepreneur_id})">Rate</button>
                         </div>
                     </div>
                 `).join('');
-            } catch (err) { console.error('Error loading requests', err); }
-        }
-
-        function getStatusBadge(status) {
-            switch (status) {
-                case 'pending': return 'bg-warning text-dark';
-                case 'accepted': return 'bg-info text-dark';
-                case 'rejected': return 'bg-danger text-white';
-                case 'completed': return 'bg-success text-white';
-                default: return 'bg-secondary text-white';
-            }
+            } catch (err) { console.error(err); }
         }
 
         function openReviewModal(entrepreneurId) {
@@ -351,44 +338,32 @@
         document.getElementById('reviewForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Submitting...';
             btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
-            const entrepreneurId = document.getElementById('reviewEntrepreneurId').value;
-            const rating = document.getElementById('reviewRating').value;
-            const comment = document.getElementById('reviewComment').value;
+            const data = {
+                entrepreneur_id: document.getElementById('reviewEntrepreneurId').value,
+                rating: document.getElementById('reviewRating').value,
+                comment: document.getElementById('reviewComment').value
+            };
 
             try {
                 const response = await fetch('/api/reviews', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ entrepreneur_id: entrepreneurId, rating, comment })
+                    body: JSON.stringify(data)
                 });
 
                 if (response.ok) {
-                    showToast('Review submitted successfully!', 'success');
+                    showToast('Review submitted!', 'success');
                     bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
-                    e.target.reset();
-                } else {
-                    const res = await response.json();
-                    showToast(res.error || 'Failed to submit review', 'error');
-                }
-            } catch (err) { console.error(err); showToast('Submission error', 'error'); }
-            finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+                } else showToast('Error submitting review', 'error');
+            } catch (err) { showToast('Network error', 'error'); }
+            finally { btn.disabled = false; btn.innerHTML = 'Submit Review <i class="bi bi-send-fill ms-2"></i>'; }
         });
 
-        async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            localStorage.removeItem('user');
-            window.location.href = '/index.html';
-        }
-
-        loadOrders();
-        loadServiceRequests();
+        async function logout() { await fetch('/api/logout', { method: 'POST' }); localStorage.removeItem('user'); window.location.href = '/index.html'; }
+        loadOrders(); loadServiceRequests();
     </script>
 </body>
 </html>

@@ -68,6 +68,14 @@
     <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
     <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+
+        if (!email) {
+            showToast('No email found. Redirecting to registration...', 'error');
+            setTimeout(() => window.location.href = 'register.html', 2000);
+        }
+
         document.getElementById('verifyForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const otp_code = document.getElementById('otpInput').value;
@@ -83,12 +91,12 @@
                 const response = await fetch('/api/register/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ otp_code })
+                    body: JSON.stringify({ email, otp_code })
                 });
 
                 const res = await response.json();
                 if (response.ok) {
-                    showToast('Account activated! You explore now.', 'success');
+                    showToast('Account activated! You can now log in.', 'success');
                     btn.classList.remove('btn-primary');
                     btn.classList.add('btn-success');
                     btn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Verified!';
@@ -107,22 +115,26 @@
         });
 
         document.getElementById('resendBtn').addEventListener('click', async () => {
+            if (!email) return;
             const btn = document.getElementById('resendBtn');
             const originalText = btn.innerHTML;
             
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
-            showToast('Requesting new code...', 'info');
             
             try {
-                const response = await fetch('/api/otp/resend', { method: 'POST' });
+                const response = await fetch('/api/otp/resend', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
                 const res = await response.json();
                 if (response.ok) {
                     showToast('New code sent! Check your inbox.', 'success');
                     // Add cool down
                     let countdown = 60;
                     const timer = setInterval(() => {
-                        btn.innerHTML = `Wait ?{countdown}s`;
+                        btn.innerHTML = `Wait ${countdown}s`;
                         countdown--;
                         if (countdown < 0) {
                             clearInterval(timer);

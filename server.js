@@ -3,9 +3,88 @@ const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const path = require('path');
-const nodemailer = require('nodemailer');
-const twilio = require('twilio');
 const db = require('./database');
+const nodemailer = require('nodemailer');
+const QRCode = require('qrcode');
+
+// Configure NodeMailer with Brevo SMTP
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+    port: process.env.SMTP_PORT || 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+    }
+});
+
+async function sendEmailOTP(toEmail, toName, otpCode) {
+    const mailOptions = {
+        from: `"HunarHub Welcome" <${process.env.EMAIL_FROM}>`,
+        to: toEmail,
+        subject: "HunarHub - Your Verification Code",
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #3E362E;">
+                <div style="text-align: center; padding: 20px 0; background-color: #fcfcfc;">
+                    <h2 style="color: #865D36;">HunarHub</h2>
+                </div>
+                <div style="padding: 30px; background-color: #ffffff; border: 1px solid #eeeeee; border-radius: 8px;">
+                    <h3>Hello ${toName},</h3>
+                    <p>Welcome to HunarHub! To activate your account, please enter the following 6-digit verification code below:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #865D36; padding: 10px 20px; background-color: #f8fafc; border-radius: 8px; border: 1px dashed #A69080;">${otpCode}</span>
+                    </div>
+                    <p style="color: #666; font-size: 14px;"><em>This code will expire in 5 minutes.</em></p>
+                    <hr style="border: none; border-top: 1px solid #eeeeee; margin: 20px 0;" />
+                    <p style="color: #999; font-size: 12px; margin: 0;">If you didn't request this, please ignore this email.</p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`[SMTP] OTP Email successfully sent to ${toEmail}. Message ID: ${info.messageId}`);
+        return true;
+    } catch (error) {
+        console.error('[SMTP] Error sending email:', error);
+        return false;
+    }
+}
+
+async function sendPasswordResetOTP(toEmail, toName, otpCode) {
+    const mailOptions = {
+        from: `"HunarHub Security" <${process.env.EMAIL_FROM}>`,
+        to: toEmail,
+        subject: "HunarHub - Password Reset Code",
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #3E362E;">
+                <div style="text-align: center; padding: 20px 0; background-color: #fcfcfc;">
+                    <h2 style="color: #865D36;">HunarHub</h2>
+                </div>
+                <div style="padding: 30px; background-color: #ffffff; border: 1px solid #eeeeee; border-radius: 8px;">
+                    <h3>Hello ${toName},</h3>
+                    <p>We received a request to reset the password for your HunarHub account. Enter the following 6-digit code to securely reset your password:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #865D36; padding: 10px 20px; background-color: #f8fafc; border-radius: 8px; border: 1px dashed #A69080;">${otpCode}</span>
+                    </div>
+                    <p style="color: #666; font-size: 14px;"><em>This code will expire in 5 minutes.</em></p>
+                    <hr style="border: none; border-top: 1px solid #eeeeee; margin: 20px 0;" />
+                    <p style="color: #999; font-size: 12px; margin: 0;">If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`[SMTP] Password Reset OTP Email successfully sent to ${toEmail}. Message ID: ${info.messageId}`);
+        return true;
+    } catch (error) {
+        console.error('[SMTP] Error sending password reset email:', error);
+        return false;
+    }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,154 +94,103 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'secret-key-replace-in-production',
+    secret: 'secret-key-replace-in-production',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1 day
 }));
 
-// --- PRODUCTION SERVICE CONFIGURATION ---
-const emailTransporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASS
-    }
-});
-
-const twilioClient = (process.env.TWILIO_SID && process.env.TWILIO_SID.startsWith('AC'))
-    ? twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN)
-    : null;
-
 // API Routes
 
-// --- Registration Step 1: Initialize (Validate & Send OTP) ---
-app.post('/api/register/init', async (req, res) => {
-    console.log('--- POST /api/register/init hit ---');
-    console.log('Body:', req.body);
-    const { name, email, password, role, business_name, bio, category, location, otp_method, phone } = req.body;
+// Register
+app.post('/api/register', async (req, res) => {
+    const { name, email, password, role, business_name, bio, category, location } = req.body;
 
     if (!name || !email || !password || !role) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) return res.status(400).json({ error: 'Invalid email format' });
-
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) return res.status(400).json({ error: 'Password too weak (8+ chars, 1 upper, 1 num, 1 special)' });
 
-    // Store registration data in session temporarily
-    req.session.tempUser = { name, email, password, role, business_name, bio, category, location, otp_method, phone };
-
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
-    const target = otp_method === 'sms' ? phone : email;
-
-    if (!target) return res.status(400).json({ error: `Please provide a ${otp_method === 'sms' ? 'phone number' : 'email'}` });
-
-    try {
-        db.prepare('DELETE FROM otps WHERE email = ?').run(target);
-
-        if (otp_method === 'email') {
-            if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASS) {
-                return res.status(500).json({ error: 'Email service not configured on server' });
-            }
-            await emailTransporter.sendMail({
-                from: `"HunarHub Verification" <${process.env.GMAIL_USER}>`,
-                to: target,
-                subject: "Your HunarHub Verification Code",
-                html: `<div style="font-family:sans-serif;padding:20px;border:1px solid #007ea7;border-radius:10px;">
-                        <h2 style="color:#007ea7;">HunarHub</h2>
-                        <p>Your verification code is:</p>
-                        <h1 style="letter-spacing:5px;color:#003249;">${code}</h1>
-                        <p>This code will expire in 10 minutes.</p>
-                       </div>`
-            });
-        } else if (otp_method === 'sms') {
-            if (!twilioClient) return res.status(500).json({ error: 'SMS service not configured on server' });
-            await twilioClient.messages.create({
-                body: `Your HunarHub verification code is: ${code}`,
-                from: process.env.TWILIO_NUM,
-                to: target
-            });
-        }
-
-        db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(target, code, expiresAt);
-        res.json({ message: 'Verification code sent' });
-    } catch (err) {
-        console.error('OTP Init Error:', err);
-        res.status(500).json({ error: 'Failed to send verification code' });
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
     }
-});
 
-// --- Registration Step 2: Verify & Activate ---
-app.post('/api/register/verify', async (req, res) => {
-    const { otp_code } = req.body;
-    const tempUser = req.session.tempUser;
-
-    if (!tempUser) return res.status(400).json({ error: 'Session expired. Please register again.' });
-    if (!otp_code) return res.status(400).json({ error: 'Verification code required' });
-
-    const target = tempUser.otp_method === 'sms' ? tempUser.phone : tempUser.email;
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({ error: 'Password too weak (8+ chars, 1 upper, 1 num, 1 special)' });
+    }
 
     try {
-        const otpCheck = db.prepare('SELECT * FROM otps WHERE email = ? AND code = ? AND expires_at > CURRENT_TIMESTAMP').get(target, otp_code);
-        if (!otpCheck) return res.status(400).json({ error: 'Invalid or expired verification code' });
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        const hashedPassword = await bcrypt.hash(tempUser.password, 10);
-        const insertUser = db.prepare(`INSERT INTO users (name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)`);
+        const insertUser = db.prepare(`
+            INSERT INTO users (name, email, password_hash, role, is_verified) 
+            VALUES (?, ?, ?, ?, ?)
+        `);
 
+        // Transaction for user creation
         const createUserTransaction = db.transaction(() => {
-            const info = insertUser.run(tempUser.name, tempUser.email, tempUser.phone || null, hashedPassword, tempUser.role);
+            const info = insertUser.run(name, email, hashedPassword, role, 0); // is_verified is 0
             const userId = info.lastInsertRowid;
 
-            if (tempUser.role === 'entrepreneur') {
-                db.prepare(`INSERT INTO entrepreneurs (user_id, business_name, bio, category, location) VALUES (?, ?, ?, ?, ?)`).run(
-                    userId, tempUser.business_name, tempUser.bio || null, tempUser.category || null, tempUser.location || null
-                );
+            if (role === 'entrepreneur') {
+                if (!business_name) throw new Error('Business name required for entrepreneurs');
+                const insertEntrepreneur = db.prepare(`
+                    INSERT INTO entrepreneurs (user_id, business_name, bio, category, location)
+                    VALUES (?, ?, ?, ?, ?)
+                `);
+                insertEntrepreneur.run(userId, business_name, bio || null, category || null, location || null);
             }
             return userId;
         });
 
         const newUserId = createUserTransaction();
-        db.prepare('DELETE FROM otps WHERE email = ?').run(target);
-        delete req.session.tempUser;
 
-        res.status(201).json({ message: 'User activated successfully', userId: newUserId });
+        // Generate OTP and send email
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60000).toISOString(); // 5 mins
+
+        db.prepare('DELETE FROM otps WHERE email = ?').run(email);
+        db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(email, otpCode, expiresAt);
+
+        // Send actual email via Brevo
+        await sendEmailOTP(email, name, otpCode);
+
+        res.status(201).json({ message: 'User created successfully. Please verify your email.', email: email });
+
     } catch (err) {
-        if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') return res.status(409).json({ error: 'Email already exists' });
-        console.error('Activation error:', err);
-        res.status(500).json({ error: 'Failed to activate account' });
+        if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+            return res.status(409).json({ error: 'Email already exists' });
+        }
+        console.error('Registration error:', err);
+        res.status(500).json({ error: 'Registration failed' });
     }
 });
 
-// OTP Resend
-app.post('/api/otp/resend', async (req, res) => {
-    const tempUser = req.session.tempUser;
-    if (!tempUser) return res.status(400).json({ error: 'No active session found' });
-
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
-    const target = tempUser.otp_method === 'sms' ? tempUser.phone : tempUser.email;
+// Verify OTP
+app.post('/api/register/verify', (req, res) => {
+    const { email, otp_code } = req.body;
+    if (!email || !otp_code) return res.status(400).json({ error: 'Email and OTP code are required' });
 
     try {
-        db.prepare('DELETE FROM otps WHERE email = ?').run(target);
-        if (tempUser.otp_method === 'email') {
-            await emailTransporter.sendMail({
-                from: `"HunarHub" <${process.env.GMAIL_USER}>`,
-                to: target,
-                subject: "Your New Verification Code",
-                html: `<h1>${code}</h1>`
-            });
-        } else if (tempUser.otp_method === 'sms' && twilioClient) {
-            await twilioClient.messages.create({ body: `New HunarHub code: ${code}`, from: process.env.TWILIO_NUM, to: target });
+        const otpCheck = db.prepare('SELECT * FROM otps WHERE email = ? AND code = ? AND expires_at > CURRENT_TIMESTAMP').get(email, otp_code);
+        if (!otpCheck) {
+            return res.status(400).json({ error: 'Invalid or expired OTP' });
         }
-        db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(target, code, expiresAt);
-        res.json({ message: 'New code sent' });
+
+        const user = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        db.prepare('UPDATE users SET is_verified = 1 WHERE email = ?').run(email);
+        db.prepare('DELETE FROM otps WHERE email = ?').run(email);
+
+        res.json({ message: 'Email verified successfully! You can now log in.' });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to resend code' });
+        console.error('Verification error:', err);
+        res.status(500).json({ error: 'Verification failed' });
     }
 });
 
@@ -183,12 +211,122 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
+        if (user.is_verified === 0) {
+            return res.status(401).json({ error: 'Please verify your email address before logging in.', unverified: true });
+        }
+
         req.session.user = { id: user.id, name: user.name, role: user.role };
         res.json({ message: 'Login successful', user: req.session.user });
 
     } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ error: 'Login failed' });
+    }
+});
+
+// Forgot Password - Send OTP
+app.post('/api/password/forgot', async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email address is required' });
+
+    try {
+        const user = db.prepare('SELECT name FROM users WHERE email = ?').get(email);
+        if (!user) {
+            // Standard practice: Don't leak whether an email exists, but for UX we can say it here.
+            return res.status(404).json({ error: 'No account found with this email address' });
+        }
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60000).toISOString(); // 5 mins
+
+        // Delete previous OTPs for this email
+        db.prepare('DELETE FROM otps WHERE email = ?').run(email);
+
+        // Store new OTP
+        db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(email, code, expiresAt);
+
+        // Send Email via Nodemailer
+        const sent = await sendPasswordResetOTP(email, user.name, code);
+        
+        if (sent) {
+            res.json({ message: 'Password recovery code sent to your email.' });
+        } else {
+            res.status(500).json({ error: 'Failed to send recovery email. Please try again later.' });
+        }
+    } catch (err) {
+        console.error('Forgot Password error:', err);
+        res.status(500).json({ error: 'An error occurred processing your request' });
+    }
+});
+
+// Reset Password - Verify OTP & Update DB
+app.post('/api/password/reset', async (req, res) => {
+    const { email, otp_code, new_password } = req.body;
+
+    if (!email || !otp_code || !new_password) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(new_password)) {
+        return res.status(400).json({ error: 'Password does not meet complexity requirements' });
+    }
+
+    try {
+        const otpCheck = db.prepare('SELECT * FROM otps WHERE email = ? AND code = ? AND expires_at > CURRENT_TIMESTAMP').get(email, otp_code);
+        if (!otpCheck) {
+            return res.status(400).json({ error: 'Invalid or expired recovery code' });
+        }
+
+        const hashedPassword = await bcrypt.hash(new_password, 10);
+        
+        // Update password and clear OTP
+        db.prepare('UPDATE users SET password_hash = ? WHERE email = ?').run(hashedPassword, email);
+        db.prepare('DELETE FROM otps WHERE email = ?').run(email);
+
+        res.json({ message: 'Password successfully updated' });
+    } catch (err) {
+        console.error('Reset Password error:', err);
+        res.status(500).json({ error: 'Failed to reset your password' });
+    }
+});
+
+// ----------------------------------------------------------------------
+// DYNAMIC QR PAYMENT ENDPOINT
+
+app.post('/api/payment/generate-qr', async (req, res) => {
+    const { amount, upiId } = req.body;
+    
+    if (!amount || !upiId) {
+        return res.status(400).json({ error: 'Missing correct amount or tracking UPI ID' });
+    }
+
+    try {
+        // Construct standard unified payment interface (UPI) linking string
+        const upiString = `upi://pay?pa=hunarhub@axisbank&pn=HunarHub%20Secure%20Checkout&am=${amount}&cu=INR`;
+        
+        // Generate high-resolution base64 Image of the QR code using HunarHub primary color palette
+        const qrBase64 = await QRCode.toDataURL(upiString, {
+            color: {
+                dark: '#3E362E',  // HunarHub Primary Dark Brown
+                light: '#FFFFFF'
+            },
+            width: 300,
+            margin: 2
+        });
+        
+        // Give the code exactly 5 strict minutes to live
+        const expiresAt = Date.now() + 5 * 60 * 1000;
+
+        res.json({
+            success: true,
+            qrImage: qrBase64,
+            expiresAt: expiresAt
+        });
+
+    } catch (err) {
+        console.error('Error violently generating payment QR:', err);
+        res.status(500).json({ error: 'Failed to generate your payment QR Code' });
     }
 });
 
@@ -209,12 +347,44 @@ app.get('/api/entrepreneurs', (req, res) => {
     }
 });
 
-// Get Recent Products (Public)
+// Get Recent Products (Public) with Search & Filtering
 app.get('/api/products/recent', (req, res) => {
+    const { q, category, sort } = req.query;
     try {
-        console.log('Fetching recent products...');
-        const stmt = db.prepare('SELECT * FROM products ORDER BY id DESC LIMIT 50');
-        const products = stmt.all();
+        let sql = `
+            SELECT p.* 
+            FROM products p
+            JOIN entrepreneurs e ON p.entrepreneur_id = e.user_id
+        `;
+        let conditions = [];
+        let params = [];
+
+        if (q) {
+            conditions.push("p.name LIKE ?");
+            params.push(`%${q}%`);
+        }
+
+        if (category && category !== '') {
+            conditions.push("e.category = ?");
+            params.push(category);
+        }
+
+        if (conditions.length > 0) {
+            sql += " WHERE " + conditions.join(" AND ");
+        }
+
+        if (sort === 'price-low') {
+            sql += " ORDER BY p.price ASC";
+        } else if (sort === 'price-high') {
+            sql += " ORDER BY p.price DESC";
+        } else {
+            sql += " ORDER BY p.id DESC";
+        }
+
+        sql += " LIMIT 50";
+
+        const stmt = db.prepare(sql);
+        const products = stmt.all(...params);
 
         const imgStmt = db.prepare('SELECT image_url FROM product_images WHERE product_id = ?');
 
@@ -223,10 +393,9 @@ app.get('/api/products/recent', (req, res) => {
             product.images = images.length > 0 ? images : (product.image_url ? [product.image_url] : []);
         }
 
-        console.log(`Found ${products.length} recent products.`);
         res.json(products);
     } catch (err) {
-        console.error('Error fetching recent products:', err);
+        console.error('Error fetching filtered products:', err);
         res.status(500).json({ error: 'Failed to fetch products' });
     }
 });
@@ -242,6 +411,8 @@ app.get('/api/products/:entrepreneurId', (req, res) => {
 
         for (const product of products) {
             const images = imgStmt.all(product.id).map(i => i.image_url);
+            // Fallback to legacy image_url if no new images found, or mix them? 
+            // Better to prefer product_images, but if empty use legacy.
             product.images = images.length > 0 ? images : (product.image_url ? [product.image_url] : []);
         }
 
@@ -262,6 +433,7 @@ app.get('/api/product/:id', (req, res) => {
         const images = db.prepare('SELECT image_url FROM product_images WHERE product_id = ?').all(id);
         product.images = images.map(img => img.image_url);
 
+        // If no images in product_images table, fall back to the main image_url (backward compatibility)
         if (product.images.length === 0 && product.image_url) {
             product.images = [product.image_url];
         }
@@ -300,11 +472,13 @@ app.post('/api/products', upload.array('images', 5), (req, res) => {
     }
 
     try {
+        // use transaction
         const createProductTransaction = db.transaction(() => {
             const stmt = db.prepare(`
                 INSERT INTO products (entrepreneur_id, name, description, price, image_url)
                 VALUES (?, ?, ?, ?, ?)
             `);
+            // Use the first image as the main thumbnail for backward compatibility
             const mainImage = files && files.length > 0 ? `/uploads/${files[0].filename}` : null;
             const info = stmt.run(req.session.user.id, name, description, price, mainImage);
             const productId = info.lastInsertRowid;
@@ -326,27 +500,47 @@ app.post('/api/products', upload.array('images', 5), (req, res) => {
     }
 });
 
-// Place Order (Customer only)
+// Place Order (Customer only) - Supports Bulk Actions (Cart)
 app.post('/api/orders', (req, res) => {
     if (!req.session.user || req.session.user.role !== 'customer') {
         return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const { entrepreneur_id, product_id, payment_method } = req.body;
-    if (!entrepreneur_id || !product_id || !payment_method) {
-        return res.status(400).json({ error: 'Missing order details or payment method' });
+    const { items, payment_method, payment_status } = req.body;
+    
+    // Fallback for older singular checkout format (just in case)
+    const orderItems = items || [];
+    if (!items && req.body.product_id) {
+        orderItems.push({ 
+            entrepreneur_id: req.body.entrepreneur_id, 
+            product_id: req.body.product_id 
+        });
+    }
+
+    if (orderItems.length === 0 || !payment_method) {
+        return res.status(400).json({ error: 'Cart is completely empty or missing payment method' });
     }
 
     try {
-        const stmt = db.prepare(`
-            INSERT INTO orders (customer_id, entrepreneur_id, product_id, payment_method)
-            VALUES (?, ?, ?, ?)
-        `);
-        const info = stmt.run(req.session.user.id, entrepreneur_id, product_id, payment_method);
-        res.status(201).json({ message: 'Order placed', orderId: info.lastInsertRowid });
+        const processOrderBatch = db.transaction((cart) => {
+            const stmt = db.prepare(`
+                INSERT INTO orders (customer_id, entrepreneur_id, product_id, payment_method, payment_status)
+                VALUES (?, ?, ?, ?, ?)
+            `);
+            const insertedIds = [];
+            for (const item of cart) {
+                const info = stmt.run(req.session.user.id, item.entrepreneur_id, item.product_id, payment_method, payment_status || 'Pending');
+                insertedIds.push(info.lastInsertRowid);
+            }
+            return insertedIds;
+        });
+
+        const successfulIds = processOrderBatch(orderItems);
+        res.status(201).json({ message: 'Orders placed successfully!', orderIds: successfulIds });
+
     } catch (err) {
-        console.error('Error placing order:', err);
-        res.status(500).json({ error: 'Failed to place order' });
+        console.error('Error placing order batch:', err);
+        res.status(500).json({ error: 'Failed to complete checkout processing' });
     }
 });
 
@@ -383,7 +577,7 @@ app.get('/api/my-orders', (req, res) => {
         let stmt;
         if (req.session.user.role === 'customer') {
             stmt = db.prepare(`
-                SELECT o.id, o.status, o.payment_method, o.created_at, p.name as product_name, p.price, p.image_url, e.business_name
+                SELECT o.id, o.status, o.payment_method, o.payment_status, o.created_at, p.name as product_name, p.price, p.image_url, e.business_name
                 FROM orders o
                 JOIN products p ON o.product_id = p.id
                 JOIN entrepreneurs e ON o.entrepreneur_id = e.user_id
@@ -391,7 +585,7 @@ app.get('/api/my-orders', (req, res) => {
             `);
         } else {
             stmt = db.prepare(`
-                SELECT o.id, o.status, o.payment_method, o.created_at, p.name as product_name, p.price, p.image_url, u.name as customer_name
+                SELECT o.id, o.status, o.payment_method, o.payment_status, o.created_at, p.name as product_name, p.price, p.image_url, u.name as customer_name
                 FROM orders o
                 JOIN products p ON o.product_id = p.id
                 JOIN users u ON o.customer_id = u.id
@@ -541,6 +735,7 @@ app.get('/api/reviews/:entrepreneurId', (req, res) => {
 
 // 4. Admin
 app.get('/api/admin/stats', (req, res) => {
+    // Basic auth check for admin (in production use proper middleware)
     if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(403).json({ error: 'Unauthorized' });
     }
@@ -550,6 +745,7 @@ app.get('/api/admin/stats', (req, res) => {
         const entrepreneurCount = db.prepare('SELECT COUNT(*) as count FROM entrepreneurs').get();
         const orderCount = db.prepare('SELECT COUNT(*) as count FROM orders').get();
         const requestCount = db.prepare('SELECT COUNT(*) as count FROM service_requests').get();
+
         const pendingVerifications = db.prepare('SELECT COUNT(*) as count FROM entrepreneurs WHERE verified = 0').get();
 
         res.json({
@@ -597,43 +793,147 @@ app.get('/api/admin/pending-entrepreneurs', (req, res) => {
     }
 });
 
-// Stats Overview (for Landing Page)
+// Admin: List all users
+app.get('/api/admin/users', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    try {
+        const users = db.prepare('SELECT id, name, email, role, created_at FROM users').all();
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+// Admin: List all entrepreneurs
+app.get('/api/admin/entrepreneurs-all', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    try {
+        const ents = db.prepare(`
+            SELECT u.id, u.name, u.email, e.business_name, e.category, e.location, e.verified
+            FROM users u
+            JOIN entrepreneurs e ON u.id = e.user_id
+        `).all();
+        res.json(ents);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch entrepreneurs' });
+    }
+});
+
+// Admin: List all orders
+app.get('/api/admin/orders', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    try {
+        const orders = db.prepare(`
+            SELECT o.id, o.status, o.payment_method, o.created_at, 
+                   p.name as product_name, p.price,
+                   u.name as customer_name,
+                   e.business_name as entrepreneur_name
+            FROM orders o
+            JOIN products p ON o.product_id = p.id
+            JOIN users u ON o.customer_id = u.id
+            JOIN entrepreneurs e ON o.entrepreneur_id = e.user_id
+        `).all();
+        res.json(orders);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+});
+
+// Admin: List all service requests
+app.get('/api/admin/requests', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    try {
+        const requests = db.prepare(`
+            SELECT sr.*, s.name as service_name, 
+                   u.name as customer_name,
+                   e.business_name as entrepreneur_name
+            FROM service_requests sr
+            JOIN services s ON sr.service_id = s.id
+            JOIN users u ON sr.customer_id = u.id
+            JOIN entrepreneurs e ON sr.entrepreneur_id = e.user_id
+        `).all();
+        res.json(requests);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch requests' });
+    }
+});
+
+// Admin: List all reviews (Feedback)
+app.get('/api/admin/reviews', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    try {
+        const reviews = db.prepare(`
+            SELECT r.*, u.name as customer_name, e.business_name 
+            FROM reviews r
+            JOIN users u ON r.customer_id = u.id
+            JOIN entrepreneurs e ON r.entrepreneur_id = e.user_id
+        `).all();
+        res.json(reviews);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch reviews' });
+    }
+});
+
+// --- Stats Overview (for Landing Page) ---
 app.get('/api/stats-overview', (req, res) => {
     try {
         const artisanCount = db.prepare('SELECT COUNT(*) as count FROM users WHERE role = ?').get('entrepreneur').count;
         const productCount = db.prepare('SELECT COUNT(*) as count FROM products').get().count;
         const categoryCount = db.prepare('SELECT COUNT(DISTINCT category) as count FROM entrepreneurs').get().count;
         const avgRatingRow = db.prepare('SELECT AVG(rating) as avg FROM reviews').get();
-        const averageRating = avgRatingRow.avg ? parseFloat(avgRatingRow.avg).toFixed(1) : "4.9";
+        const averageRating = avgRatingRow.avg ? parseFloat(avgRatingRow.avg).toFixed(1) : "4.9"; // Fallback to 4.9 if no reviews
 
-        res.json({ artisanCount, productCount, categoryCount: categoryCount || 10, averageRating });
+        res.json({
+            artisanCount,
+            productCount,
+            categoryCount: categoryCount || 10, // Fallback if 0
+            averageRating
+        });
     } catch (err) {
-        res.status(500).json({ error: 'Database error' });
+        console.error(err);
+        res.status(500).json({ error: 'Database error fetching stats' });
     }
 });
 
-// Legacy OTP Send (Still used for resends or other checks)
-app.post('/api/otp/send', async (req, res) => {
-    const { method, target } = req.body;
-    if (!method || !target) return res.status(400).json({ error: 'Method and target are required' });
-
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60000).toISOString();
+// OTP Resend Implementation
+app.post('/api/otp/resend', async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
 
     try {
-        db.prepare('DELETE FROM otps WHERE email = ?').run(target);
-        if (method === 'email') {
-            await emailTransporter.sendMail({
-                from: `"HunarHub" <${process.env.GMAIL_USER}>`,
-                to: target, subject: "Code", html: `<h1>${code}</h1>`
-            });
-        } else if (method === 'sms' && twilioClient) {
-            await twilioClient.messages.create({ body: `Code: ${code}`, from: process.env.TWILIO_NUM, to: target });
+        const user = db.prepare('SELECT name FROM users WHERE email = ?').get(email);
+        if (!user) return res.status(404).json({ error: 'Account not found. Please register.' });
+
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60000).toISOString(); // 5 mins
+
+        // Delete previous OTPs for this email
+        db.prepare('DELETE FROM otps WHERE email = ?').run(email);
+
+        // Store new OTP
+        db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(email, code, expiresAt);
+
+        // Send via Brevo
+        const sent = await sendEmailOTP(email, user.name, code);
+        
+        if (sent) {
+            res.json({ message: 'New verification code sent successfully to your email' });
+        } else {
+            res.status(500).json({ error: 'Failed to dispatch email' });
         }
-        db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(target, code, expiresAt);
-        res.json({ message: 'Code sent' });
     } catch (err) {
-        res.status(500).json({ error: 'Failed to send code' });
+        console.error('OTP Resend Error:', err);
+        res.status(500).json({ error: 'Failed to request new code' });
     }
 });
 

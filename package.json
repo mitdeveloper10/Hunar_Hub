@@ -11,13 +11,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@getbrevo/brevo": "^5.0.3",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.6.2",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "multer": "^2.0.2",
-    "nodemailer": "^8.0.2",
+    "nodemailer": "^8.0.4",
+    "qrcode": "^1.5.4",
+    "sib-api-v3-sdk": "^8.5.0",
     "twilio": "^5.12.2"
   }
 }

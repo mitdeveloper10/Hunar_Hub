@@ -4,87 +4,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explore Hunar-Hub</title>
+    <title>Explore the Marketplace | HunarHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="/css/style.css" rel="stylesheet">
     <script src="/js/toasts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        .page-header {
+            background-color: var(--bg-light);
+            padding: 120px 0 60px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .filter-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-top: -40px;
+            position: relative;
+            z-index: 10;
+        }
+        .search-input {
+            border: 1px solid var(--border-color);
+            background: var(--bg-main);
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+        }
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(134, 93, 54, 0.1);
+            background: white;
+            border-color: var(--clr-primary);
+        }
+        .ent-card { border-top: 4px solid var(--primary-color); border-radius: var(--radius-md); }
+        .ent-card-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: var(--shadow-sm); margin: -40px auto 15px;}
+        
+        .modal-content { border-radius: var(--radius-lg); }
+        .modal-header { border-bottom: 1px solid var(--border-color); }
+    </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <!-- Professional Floating Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top glass-nav py-3 border-bottom shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/">Hunar-Hub</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="/">
+                <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    <i class="bi bi-layers-half"></i>
+                </div>
+                <span class="text-heading">HunarHub</span><span class="text-primary">.</span>
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <div id="userInfo" class="d-none">
+                    <a href="/dashboard-customer.html" class="btn btn-primary btn-sm px-4">My Portal</a>
+                </div>
+                <div id="authLinks">
+                    <a href="/login.html" class="btn btn-outline-primary btn-sm px-4">Sign In</a>
+                </div>
+            </div>
+            <button class="navbar-toggler border-0 shadow-none text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-2"></i>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="/explore.html">Explore</a></li>
-                    <li class="nav-item" id="navAuth">
-                        <!-- Will be populated by JS -->
-                    </li>
+                <ul class="navbar-nav ms-auto align-items-center gap-3" id="navLinks">
+                    <!-- Nav links populated by JS -->
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container py-5">
-        <h2 class="text-center mb-5">Discover Local Entrepreneurs</h2>
+    <!-- Page Header -->
+    <header class="page-header text-center" style="background: linear-gradient(180deg, var(--clr-neutral) 0%, #ffffff 100%);">
+        <div class="container animate-slide-up">
+            <h1 class="display-5 fw-bold text-heading mb-3">Explore the Marketplace</h1>
+            <p class="lead text-muted mx-auto" style="max-width: 600px;">Discover unique creations and professional services from skilled local artisans.</p>
+        </div>
+    </header>
 
-        <!-- Search & Filter -->
-        <div class="row mb-4 g-3">
-            <div class="col-md-6">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" id="searchInput" class="form-control border-start-0"
-                        placeholder="Search by name, business, or bio...">
+        <!-- Main Discovery Interface -->
+    <div class="row g-4">
+        <!-- Sidebar Filters -->
+        <aside class="col-lg-3">
+            <div class="sticky-top" style="top: 100px;">
+                <div class="card border-0 shadow-lg premium-card p-4">
+                    <h5 class="fw-bold mb-4 d-flex align-items-center">
+                        <i class="bi bi-sliders2 text-primary me-2"></i> Refine Search
+                    </h5>
+                    
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase mb-3">Discovery</label>
+                        <div class="input-group glass-pane border rounded-pill overflow-hidden shadow-sm">
+                            <span class="input-group-text bg-transparent border-0 ps-3"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" id="searchInput" class="form-control border-0 bg-transparent shadow-none py-2" placeholder="Search products...">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase mb-3">Category</label>
+                        <select id="categoryFilter" class="form-select glass-pane border-0 shadow-sm rounded-lg py-2 fs-6" onchange="filterEntrepreneurs()">
+                            <option value="">All Categories</option>
+                            <option value="Artisan">Artisan</option>
+                            <option value="Tailor">Tailor</option>
+                            <option value="Potter">Potter</option>
+                            <option value="Cobbler">Cobbler</option>
+                            <option value="Food">Food & Beverages</option>
+                            <option value="Other">Other Category</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted text-uppercase mb-3">Sort By</label>
+                        <select id="sortSelect" class="form-select glass-pane border-0 shadow-sm rounded-lg py-2 fs-6">
+                            <option value="newest">Latest Arrivals</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary w-100 btn-pill shadow-lg mt-3" onclick="loadAllProducts()">Apply Filters</button>
                 </div>
             </div>
-            <div class="col-md-4">
-                <select id="categoryFilter" class="form-select">
-                    <option value="">All Categories</option>
-                    <option value="Artisan">Artisan</option>
-                    <option value="Tailor">Tailor</option>
-                    <option value="Potter">Potter</option>
-                    <option value="Cobbler">Cobbler</option>
-                    <option value="Food">Food & Beverages</option>
-                    <option value="Other">Other</option>
-                </select>
+        </aside>
+
+        <!-- Main Listing Area -->
+        <div class="col-lg-9">
+            <div class="d-flex align-items-center justify-content-between mb-5">
+                <h3 class="fw-bold mb-0 text-heading">Featured Creators</h3>
+                <span class="badge bg-secondary text-white border-0 px-3 py-2 rounded-pill">Top Talent</span>
             </div>
-            <div class="col-md-2">
-                <button class="btn btn-primary w-100" onclick="filterEntrepreneurs()">Search</button>
+            <div id="entrepreneurList" class="row g-4 pt-3">
+                    <div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>
+                </div>
+
+                <!-- Global Marketplace Section -->
+                <div class="mt-5 pt-5 border-top">
+                    <div class="mb-4">
+                        <h3 class="fw-bold text-heading">Marketplace Explorer</h3>
+                        <p class="text-muted">Unique handcrafted products from across the hub.</p>
+                    </div>
+                    <div id="allProductsList" class="row g-4">
+                        <div class="col-12 text-center py-5"><span class="spinner-border text-primary"></span></div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <div id="entrepreneurList" class="row">
-            <!-- Entrepreneurs loaded here -->
-        </div>
-
-        <h2 class="text-center my-5">Browse All Products</h2>
-        <div id="allProductsList" class="row">
-            <p class="text-center">Loading products...</p>
-        </div>
-
     </div>
 
-    <!-- Products Modal -->
-    <div class="modal fade" id="productsModal" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow-lg d-flex flex-column" style="max-height: 90vh;">
-                <div class="modal-header border-bottom-0 bg-light py-4 px-4 px-md-5 flex-shrink-0">
-                    <h5 class="modal-title fw-bold text-heading fs-4" id="modalTitle">Portfolio</h5>
-                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+    <!-- Shopping Cart FAB -->
+    <button class="btn btn-primary shadow-lg position-fixed d-flex align-items-center justify-content-center" 
+        style="bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; z-index: 1000;"
+        onclick="openCart()">
+        <i class="bi bi-cart3 fs-3"></i>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm border border-white" id="cartBadgeCount" style="transform: translate(-30%, -30%) !important;">0</span>
+    </button>
+
+    <!-- Shopping Cart Offcanvas -->
+    <div class="offcanvas offcanvas-end shadow" tabindex="-1" id="cartOffcanvas" style="width: 400px; border-left: none;">
+        <div class="offcanvas-header bg-light border-bottom p-4">
+            <h5 class="offcanvas-title fw-bold text-heading d-flex align-items-center">
+                <i class="bi bi-bag-check-fill text-primary me-2"></i> Your Cart
+            </h5>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column bg-main">
+            <!-- Items Box -->
+            <div id="cartItemsContainer" class="flex-grow-1 overflow-auto p-4 d-flex flex-column gap-3">
+                <!-- Javascript will populate this -->
+            </div>
+            <!-- Bottom Total Box -->
+            <div class="bg-white p-4 border-top shadow-sm mt-auto">
+                <div class="d-flex justify-content-between text-muted small mb-2 fw-bold">
+                    <span>Subtotal</span>
+                    <span>₹<span id="cartSubtotal">0.00</span></span>
                 </div>
-                <div class="modal-body p-4 p-md-5 bg-main overflow-y-auto flex-grow-1">
-                    <div id="modalProductsList" class="row g-4">
-                        <div class="text-center py-5 w-100">
-                            <span class="spinner-border text-primary"></span>
+                <div class="d-flex justify-content-between text-muted small mb-3 fw-bold">
+                    <span>Platform Fee (2%)</span>
+                    <span>₹<span id="cartFee">0.00</span></span>
+                </div>
+                <div class="d-flex justify-content-between text-heading fs-5 fw-bold mb-4 pt-3 border-top border-dashed">
+                    <span>Grand Total</span>
+                    <span class="text-primary">₹<span id="cartGrandTotal">0.00</span></span>
+                </div>
+                <button class="btn btn-primary w-100 py-3 fw-bold shadow-lg" onclick="proceedToCheckout()" id="btnProceedCheckout" disabled>
+                    Proceed to Secure Checkout <i class="bi bi-arrow-right-short fs-5 ms-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Official Invoice / Bill Modal -->
+    <div class="modal fade" id="invoiceModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 overflow-hidden" style="border-radius: 12px;">
+                <div class="modal-header bg-primary text-white py-3 px-4 px-md-5 border-0 d-flex justify-content-between">
+                    <h5 class="modal-title fw-bold mb-0 d-flex align-items-center"><i class="bi bi-receipt me-2"></i> Official Bill of Orders</h5>
+                    <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <!-- The Printable Paper Structure -->
+                <div class="modal-body p-0 bg-white" id="invoicePrintArea">
+                    <div class="p-4 p-md-5 bg-white position-relative">
+                        <!-- Watermark -->
+                        <div class="text-success fw-bold text-center w-100" style="opacity: 0.1; position: absolute; top: 40%; left: 0; font-size: 8rem; pointer-events: none; z-index: 0; user-select: none;">PAID</div>
+                        
+                        <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+                            <div>
+                                <h3 class="fw-bold text-heading d-flex align-items-center mb-1"><div class="bg-primary text-white rounded d-inline-flex me-2 p-1"><i class="bi bi-layers-half fs-5"></i></div> HunarHub</h3>
+                                <p class="text-muted small mb-0">Empowering Local Artisans</p>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="fw-bold mb-1 text-uppercase text-muted small">Invoice / Receipt</h6>
+                                <p class="text-dark small fw-bold mb-0" id="invoiceDate">Date: N/A</p>
+                                <p class="text-dark small fw-bold mb-0" id="invoiceRef">Ref: #HH-N/A</p>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive rounded-3 border mb-4">
+                            <table class="table table-borderless table-striped mb-0 text-start">
+                                <thead class="bg-light border-bottom text-muted small text-uppercase">
+                                    <tr>
+                                        <th class="py-3 px-4">Item Details</th>
+                                        <th class="py-3 px-4 text-center">Qty</th>
+                                        <th class="py-3 px-4 text-end">Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoiceItemsList" class="align-middle border-bottom">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                                <tfoot>
+                                    <tr><td colspan="2" class="text-end text-muted small fw-bold pt-4 px-4">Subtotal</td><td class="text-end fw-bold text-dark pt-4 px-4">₹<span id="invSubtotal">0.00</span></td></tr>
+                                    <tr><td colspan="2" class="text-end text-muted small fw-bold px-4">Platform Fee (2%)</td><td class="text-end fw-bold text-dark px-4">₹<span id="invFee">0.00</span></td></tr>
+                                    <tr><td colspan="2" class="text-end text-heading fs-5 fw-bold px-4 pb-4">Grand Total</td><td class="text-end text-primary fs-5 fw-bold px-4 pb-4">₹<span id="invTotal">0.00</span></td></tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        
+                        <div class="text-center text-muted small mt-5 pt-3 border-top">
+                            <p class="mb-1"><i class="bi bi-shield-check text-success me-1"></i> Securely processed on HunarHub <span id="invMethodBadge" class="badge bg-light text-dark border ms-1">Unknown</span></p>
+                            <p class="mb-0">Thank you for supporting micro-entrepreneurs!</p>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 bg-light py-3 px-4 flex-shrink-0">
-                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                <div class="modal-footer px-4 pb-4 pt-3 bg-light border-top">
+                    <button type="button" class="btn btn-outline-secondary px-4 fw-bold shadow-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary px-4 fw-bold shadow-lg" onclick="downloadInvoicePDF()"><i class="bi bi-file-earmark-pdf-fill me-2"></i> Download PDF Bill</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+
+    <!-- Products & Services Modal -->
+    <div class="modal fade" id="productsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg overflow-hidden">
+                <div class="modal-header bg-light border-bottom px-4 px-md-5 py-4 flex-shrink-0">
+                    <div>
+                        <span class="badge bg-white border text-primary mb-2">Artisan Portfolio</span>
+                        <h4 class="modal-title fw-bold text-heading mb-0" id="modalTitle">Portfolio</h4>
+                    </div>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-main p-4 p-md-5 flex-grow-1">
+                    <div id="modalProductsList" class="row g-4">
+                        <div class="text-center py-5 w-100"><span class="spinner-border text-primary"></span></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -93,33 +278,162 @@
     <!-- Checkout Modal -->
     <div class="modal fade" id="checkoutModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow-lg">
-                <div class="modal-header border-bottom-0 bg-light py-4 px-4 px-md-5">
-                    <h5 class="modal-title fw-bold text-heading d-flex align-items-center"><i class="bi bi-cart-check text-primary me-2"></i> Checkout</h5>
+            <div class="modal-content shadow-lg border-0 overflow-hidden">
+                <div class="modal-header bg-light py-4 px-4 px-md-5 border-0">
+                    <h5 class="modal-title fw-bold text-heading d-flex align-items-center"><i class="bi bi-shield-lock-fill text-primary me-2"></i> Secure Checkout</h5>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body p-4 p-md-5">
-                    <div class="bg-main p-4 rounded-3 border mb-4">
-                        <p class="mb-2 text-muted small fw-bold text-uppercase">ORDER SUMMARY</p>
-                        <h5 class="fw-bold text-heading mb-1 text-truncate" id="checkoutProductName"></h5>
-                        <p class="text-primary fw-bold fs-4 mb-0">₹<span id="checkoutProductPrice">0.00</span></p>
+                <div class="modal-body p-4 p-md-5 bg-white">
+                    <div id="checkoutMainScreen">
+                        <div class="bg-main p-4 rounded-xl border-dashed mb-4" style="border: 2px dashed var(--border-color);">
+                            <p class="mb-2 text-muted small fw-bold text-uppercase" style="letter-spacing: 0.1em;">Order Summary</p>
+                        <h5 class="fw-bold text-heading mb-1 text-truncate" id="checkoutProductName">Product Name</h5>
+                        <p class="text-primary fw-bold fs-2 mb-0">₹<span id="checkoutProductPrice">0.00</span></p>
                     </div>
+
                     <div class="mb-4">
-                        <label class="form-label fw-bold small text-muted text-uppercase">Payment Method</label>
-                        <select id="paymentMethod" class="form-select form-select-lg shadow-none">
-                            <option value="COD">Cash on Delivery (COD)</option>
-                            <option value="UPI">UPI Payment</option>
-                            <option value="Card">Credit/Debit Card</option>
-                        </select>
+                        <label class="form-label fw-bold small text-muted text-uppercase mb-3">Choose Payment Method</label>
+                        <div class="row g-2" id="paymentMethodSelect">
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="payMethod" id="payCOD" value="COD" checked onclick="togglePaymentFields()">
+                                <label class="btn btn-outline-light border text-dark w-100 py-3 d-flex flex-column align-items-center gap-2 rounded-lg" for="payCOD">
+                                    <i class="bi bi-cash-stack fs-4 text-muted"></i>
+                                    <span class="small fw-bold">COD</span>
+                                </label>
+                            </div>
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="payMethod" id="payUPI" value="UPI" onclick="togglePaymentFields()">
+                                <label class="btn btn-outline-light border text-dark w-100 py-3 d-flex flex-column align-items-center gap-2 rounded-lg" for="payUPI">
+                                    <i class="bi bi-qr-code-scan fs-4 text-muted"></i>
+                                    <span class="small fw-bold">UPI</span>
+                                </label>
+                            </div>
+                            <div class="col-4">
+                                <input type="radio" class="btn-check" name="payMethod" id="payCard" value="Card" onclick="togglePaymentFields()">
+                                <label class="btn btn-outline-light border text-dark w-100 py-3 d-flex flex-column align-items-center gap-2 rounded-lg" for="payCard">
+                                    <i class="bi bi-credit-card-2-front fs-4 text-muted"></i>
+                                    <span class="small fw-bold">Card</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer border-top-0 px-4 pb-4 bg-transparent pt-0 text-center d-flex justify-content-between">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="confirmOrder()">Confirm Order <i class="bi bi-check2 ms-2"></i></button>
+
+                    <!-- Dynamic Fields -->
+                    <div id="upiFields" class="payment-fields d-none animate-slide-up">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control bg-light border-0" id="upiId" placeholder="username@upi">
+                            <label for="upiId">UPI ID (e.g. name@okaxis)</label>
+                        </div>
+                        <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i> You'll receive a notification on your UPI app.</p>
+                    </div>
+
+                    <div id="cardFields" class="payment-fields d-none animate-slide-up">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control bg-light border-0" id="cardNumber" placeholder="0000 0000 0000 0000">
+                            <label for="cardNumber">Card Number</label>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control bg-light border-0" id="cardExpiry" placeholder="MM/YY">
+                                    <label for="cardExpiry">Expiry</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <input type="password" class="form-control bg-light border-0" id="cardCvv" placeholder="123">
+                                    <label for="cardCvv">CVV</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="codFields" class="payment-fields animate-slide-up">
+                        <div class="alert alert-warning border-0 bg-warning bg-opacity-10 py-3 mb-0 rounded-lg">
+                            <div class="d-flex gap-3">
+                                <i class="bi bi-exclamation-triangle-fill text-warning fs-4"></i>
+                                <p class="small mb-0 text-dark">Cash on Delivery is available for this location. Please keep exact change ready to empower your local creator.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-column gap-3 mt-5">
+                        <button type="button" class="btn btn-primary w-100 py-3 fw-bold shadow-lg" id="btnConfirmOrder" onclick="confirmOrder()">Confirm & Pay Securely <i class="bi bi-arrow-right-short ms-1"></i></button>
+                        <button type="button" class="btn btn-link text-muted text-decoration-none small border-0 shadow-none w-100" data-bs-dismiss="modal">I need to check something else</button>
+                    </div>
+                    
+                    </div> <!-- End Checkout Main Screen -->
+
+                    <!-- NEW QR PAYMENT SCREEN -->
+                    <div id="paymentQrScreen" class="d-none text-center py-2 animate-slide-up">
+                        <h5 class="fw-bold text-heading mb-2">Scan Code to Pay</h5>
+                        <p class="text-muted small mb-4">Open any UPI app (GPay, PhonePe, Paytm) and scan to securely transfer <strong class="text-primary fs-5">₹<span id="qrAmountDisplay">0.00</span></strong></p>
+                        
+                        <div class="bg-light p-3 rounded-lg d-inline-block mb-4 shadow" style="border: 2px dashed #A69080;">
+                            <img id="qrImage" src="" alt="Secure UPI QR Code" style="width: 220px; height: 220px; border-radius: 8px;">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger p-2 fs-6 rounded-pill px-4" id="qrTimerDisplay">
+                                <i class="bi bi-stopwatch me-2"></i>05:00
+                            </span>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary w-100 py-3 fw-bold shadow-lg mt-2" id="btnVerifyUPI" onclick="verifyUPIPayment()">
+                            I have completed the payment <i class="bi bi-check-circle-fill ms-1"></i>
+                        </button>
+                        <button type="button" class="btn btn-link text-muted text-decoration-none small border-0 shadow-none w-100 mt-2" onclick="resetCheckoutModal()">Cancel transaction</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-5 mb-lg-0">
+                    <div class="footer-logo mb-3"><i class="bi bi-layers-half"></i> HunarHub<span>.</span></div>
+                    <p class="text-white text-opacity-50 pe-lg-5">Empowering local artisans and micro-entrepreneurs by connecting them with a wider community. Discover, support, and grow together.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-2 mb-4 mb-md-0 ms-lg-auto">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/explore.html">Explore</a></li>
+                        <li><a href="/register.html">Get Started</a></li>
+                        <li><a href="/login.html">Sign In</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 col-lg-2 mb-4 mb-md-0">
+                    <h5>Support</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="/help-center.html">Help Center</a></li>
+                        <li><a href="/safety-center.html">Safety Center</a></li>
+                        <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="/terms-of-service.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <h5>Stay Updated</h5>
+                    <p class="text-white text-opacity-50 small">Join our newsletter to discover new local talent every week.</p>
+                    <div class="newsletter-group">
+                        <input type="email" class="form-control shadow-none" placeholder="Email address">
+                        <button class="btn btn-primary" type="button" onclick="showToast('Thank you for subscribing!', 'success')">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 HunarHub. All Rights Reserved.</p>
+                <p>Designed to empower <i class="bi bi-heart-fill heart-icon"></i> local communities</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -130,12 +444,13 @@
             const dashboardLink = user.role === 'customer' ? '/dashboard-customer.html' : '/dashboard-entrepreneur.html';
             navLinks.innerHTML = `
                 <li class="nav-item"><a class="nav-link" href="${dashboardLink}">My Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="logout()">Logout</a></li>
+                <li class="nav-item ms-lg-2"><a class="btn btn-outline-danger btn-sm" href="#" onclick="logout()">Logout</a></li>
             `;
         } else {
             navLinks.innerHTML = `
-                <li class="nav-item"><a class="nav-link" href="/login.html">Login</a></li>
-                <li class="nav-item"><a class="nav-link" href="/register.html">Register</a></li>
+                <li class="nav-item"><a class="nav-link" href="/explore.html">Explore</a></li>
+                <li class="nav-item"><a class="nav-link fw-bold" href="/login.html">Sign In</a></li>
+                <li class="nav-item ms-lg-2"><a class="btn btn-primary" href="/register.html">Get Started</a></li>
             `;
         }
 
@@ -154,7 +469,7 @@
                 allEntrepreneurs = await response.json();
                 filterEntrepreneurs(); // Initial render
             } catch (err) {
-                console.error(err);
+                console.error('Error fetching entrepreneurs:', err);
             }
         }
 
@@ -171,69 +486,87 @@
 
             const container = document.getElementById('entrepreneurList');
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="col-12 text-center"><p>No results found.</p></div>';
+                container.innerHTML = '<div class="col-12 py-5 text-center"><h5 class="text-muted">No creators match your filters.</h5></div>';
                 return;
             }
 
-            container.innerHTML = filtered.map(e => `
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <h4 class="card-title">${e.business_name}</h4>
-                            <h6 class="text-muted mb-3">${e.category || 'General'} | ${e.location || 'Local'}</h6>
-                            <p class="card-text">${e.bio || 'No bio available.'}</p>
-                            <button class="btn btn-outline-primary" onclick="viewProducts(${e.id}, '${e.business_name}')">View Offers</button>
+            container.innerHTML = filtered.map((e, idx) => {
+                const bgImage = `https://source.unsplash.com/random/400x200/?${encodeURIComponent(e.category||'store')},${idx}`;
+                return `
+                <div class="col-md-6 col-lg-4 mb-4 mt-3">
+                    <div class="card h-100 ent-card text-center pt-5 pb-4 px-3 position-relative shadow-sm py-3">
+                        <div class="bg-primary rounded-circle position-absolute top-0 start-50 translate-middle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width:64px; height:64px; font-size:1.5rem; border: 4px solid white;">
+                            ${e.business_name.charAt(0).toUpperCase()}
+                        </div>
+                        <h4 class="card-title fw-bold text-heading mt-3">${e.business_name}</h4>
+                        <div class="mb-3 d-flex justify-content-center gap-2 mt-2">
+                            <span class="badge bg-main text-primary border">${e.category || 'General'}</span>
+                            <span class="badge bg-main text-muted border"><i class="bi bi-geo-alt-fill me-1"></i>${e.location || 'Local'}</span>
+                        </div>
+                        <p class="text-muted small mb-4 px-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${e.bio || 'This talented creator hasn\'t added a bio yet.'}</p>
+                        <div class="mt-auto px-2">
+                            <button class="btn btn-outline-primary w-100" onclick="viewProducts(${e.id}, '${e.business_name.replace(/'/g, "\\'")}')">View Portfolio</button>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         async function loadAllProducts() {
             try {
-                const response = await fetch(`/api/products/recent?t=${Date.now()}`);
+                const q = document.getElementById('searchInput').value;
+                const category = document.getElementById('categoryFilter').value;
+                const sort = document.getElementById('sortSelect').value;
+
+                let url = `/api/products/recent?t=${Date.now()}`;
+                if (q) url += `&q=${encodeURIComponent(q)}`;
+                if (category) url += `&category=${encodeURIComponent(category)}`;
+                if (sort) url += `&sort=${encodeURIComponent(sort)}`;
+
+                const response = await fetch(url);
                 const products = await response.json();
                 const container = document.getElementById('allProductsList');
 
                 if (products.length === 0) {
-                    container.innerHTML = '<p class="text-center">No products found.</p>';
+                    container.innerHTML = '<div class="col-12 text-center py-5"><p class="text-muted">No products match your search/filter criteria.</p></div>';
                     return;
                 }
 
                 container.innerHTML = products.map(p => {
                     const images = p.images && p.images.length > 0 ? p.images : ['https://via.placeholder.com/300'];
                     const carouselId = `recent-carousel-${p.id}`;
+                    const imgStyle = "height: 200px; object-fit: cover;";
                     const carouselHtml = images.length > 1 ? `
                             <div id="${carouselId}" class="carousel slide" data-bs-ride="carousel">
                                 <div class="carousel-inner">
                                     ${images.map((img, idx) => `
                                         <div class="carousel-item ${idx === 0 ? 'active' : ''}">
-                                            <img src="${img}" class="d-block w-100" style="height: 150px; object-fit: cover;" alt="${p.name}">
+                                            <img src="${img}" class="d-block w-100" style="${imgStyle}" alt="${p.name}">
                                         </div>
                                     `).join('')}
                                 </div>
                                 <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
+                                    <span class="carousel-control-prev-icon shadow-sm" aria-hidden="true" style="filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));"></span>
                                 </button>
                                 <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
+                                    <span class="carousel-control-next-icon" aria-hidden="true" style="filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));"></span>
                                 </button>
                             </div>
-                        ` : `<img src="${images[0]}" class="card-img-top" alt="${p.name}" style="height: 150px; object-fit: cover;">`;
+                        ` : `<img src="${images[0]}" class="card-img-top" alt="${p.name}" style="${imgStyle}">`;
 
                     return `
-                    <div class="col-md-3 mb-4">
-                        <div class="card h-100">
+                    <div class="col-md-4 col-lg-3 mb-4 animate-slide-up">
+                        <div class="card h-100 shadow-sm">
                              ${carouselHtml}
-                            <div class="card-body">
-                                <h5 class="card-title">${p.name}</h5>
-                                <p class="small text-muted mb-2">${p.description || ''}</p>
+                            <div class="card-body px-3 pb-3 pt-3">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <h5 class="fw-bold mb-0 text-truncate pe-2">${p.name}</h5>
+                                </div>
+                                <p class="small text-muted mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 38px">${p.description || 'No description available.'}</p>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold">₹${parseFloat(p.price).toFixed(2)}</span>
+                                    <span class="fw-bold text-primary fs-5">₹${parseFloat(p.price).toFixed(2)}</span>
                                     ${user && user.role === 'customer'
-                            ? `<button class="btn btn-sm btn-success" onclick="buyProduct(${p.entrepreneur_id}, ${p.id}, '${p.name}', ${p.price})">Buy</button>`
+                            ? `<button class="btn btn-sm btn-primary py-1 px-3 shadow-sm fw-bold" onclick="addToCart(${p.entrepreneur_id}, ${p.id}, '${p.name.replace(/'/g, "\\'")}', ${parseFloat(p.price).toFixed(2)})"><i class="bi bi-plus-lg me-1"></i> Add</button>`
                             : ''}
                                 </div>
                             </div>
@@ -241,14 +574,14 @@
                     </div>
                 `}).join('');
             } catch (err) {
-                console.error(err);
+                console.error('Error in loadAllProducts:', err);
             }
         }
 
         window.viewProducts = async function (userId, businessName) {
-            document.getElementById('modalTitle').textContent = `Offers from ${businessName}`;
+            document.getElementById('modalTitle').textContent = `Portfolio: ${businessName}`;
             const container = document.getElementById('modalProductsList');
-            container.innerHTML = '<p class="text-center">Loading...</p>';
+            container.innerHTML = '<div class="col-12 text-center py-5"><span class="spinner-border text-primary"></span></div>';
 
             const modal = new bootstrap.Modal(document.getElementById('productsModal'));
             modal.show();
@@ -256,8 +589,8 @@
             try {
                 // Fetch Products and Services in parallel
                 const [prodRes, servRes] = await Promise.all([
-                    fetch(`/api/products/${userId}`),
-                    fetch(`/api/services/${userId}`)
+                    fetch('/api/products/' + userId),
+                    fetch('/api/services/' + userId)
                 ]);
 
                 const products = await prodRes.json();
@@ -266,87 +599,78 @@
                 let html = '';
 
                 // Render Products
-                html += '<h4 class="mb-3">Products</h4><div class="row">';
+                html += '<div class="col-12"><h5 class="fw-bold text-primary mb-3"><i class="bi bi-box-seam me-2"></i> Products for Sale</h5></div>';
                 if (products.length === 0) {
-                    html += '<p class="text-muted">No products listed.</p>';
+                    html += '<div class="col-12"><div class="bg-white p-4 rounded text-muted text-center border">No products listed by this creator.</div></div>';
                 } else {
                     html += products.map(p => {
                         const images = p.images && p.images.length > 0 ? p.images : ['https://via.placeholder.com/300'];
-                        const carouselId = `carousel-${p.id}`;
-
+                        const carouselId = `modal-carousel-${p.id}`;
+                        const imgStyle = "height: 220px; object-fit: cover; border-radius: var(--radius-md) var(--radius-md) 0 0;";
+                        
                         const carouselHtml = images.length > 1 ? `
                             <div id="${carouselId}" class="carousel slide" data-bs-ride="carousel">
                                 <div class="carousel-inner">
                                     ${images.map((img, idx) => `
                                         <div class="carousel-item ${idx === 0 ? 'active' : ''}">
-                                            <img src="${img}" class="d-block w-100" style="height: 200px; object-fit: cover;" alt="${p.name}">
+                                            <img src="${img}" class="d-block w-100" style="${imgStyle}" alt="${p.name}">
                                         </div>
                                     `).join('')}
                                 </div>
-                                <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
-                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Previous</span>
-                                </button>
-                                <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
-                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                    <span class="visually-hidden">Next</span>
-                                </button>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
                             </div>
-                        ` : `<img src="${images[0]}" class="card-img-top" alt="${p.name}" style="height: 200px; object-fit: cover;">`;
+                        ` : `<img src="${images[0]}" class="card-img-top w-100" alt="${p.name}" style="${imgStyle}">`;
 
                         return `
-                        <div class="col-md-6 mb-3">
-                            <div class="card h-100">
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100 shadow-sm border">
                                 ${carouselHtml}
-                                <div class="card-body">
-                                    <h5>${p.name}</h5>
-                                    <p class="small">${p.description || ''}</p>
-                                    <div class="d-flex justify-content-between align-items-center mt-2">
-                                        <span class="fw-bold text-primary fs-5">₹${parseFloat(p.price).toFixed(2)}</span>
-                                        ${user && user.role === 'customer'
-                                ? `<button class="btn btn-sm btn-success" onclick="buyProduct(${userId}, ${p.id}, '${p.name}', ${p.price})">Buy</button>`
-                                : ''}
-                                    </div>
+                                <div class="card-body text-center pb-4">
+                                    <h5 class="fw-bold mb-2">${p.name}</h5>
+                                    <p class="small text-muted mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 38px">${p.description || ''}</p>
+                                    <div class="fw-bold text-primary fs-4 mb-3">₹${parseFloat(p.price).toFixed(2)}</div>
+                                    ${user && user.role === 'customer'
+                                ? `<button class="btn btn-primary w-100 py-2 fw-bold" onclick="addToCart(${userId}, ${p.id}, '${p.name.replace(/'/g, "\\'")}', ${parseFloat(p.price).toFixed(2)})"><i class="bi bi-cart-plus me-1"></i> Add to Cart</button>`
+                                : `<a href="/login.html" class="btn btn-primary w-100 py-2 fw-bold">Login to buy</a>`}
                                 </div>
                             </div>
                         </div>
                     `}).join('');
                 }
-                html += '</div>';
 
                 // Render Services
-                html += '<hr><h4 class="mb-3 mt-3">Services</h4><div class="row">';
+                html += '<div class="col-12 mt-4"><h5 class="fw-bold text-secondary mb-3"><i class="bi bi-tools me-2"></i> Services Offered</h5></div>';
                 if (services.length === 0) {
-                    html += '<p class="text-muted">No services offered.</p>';
+                    html += '<div class="col-12"><div class="bg-white p-4 rounded text-muted text-center border">No services offered.</div></div>';
                 } else {
                     html += services.map(s => `
-                        <div class="col-md-6 mb-3">
-                            <div class="card h-100 border-info">
-                                <div class="card-body">
-                                    <h5>${s.name}</h5>
-                                    <p class="small">${s.description || ''}</p>
-                                    <p class="fw-bold text-muted">${s.price_range || 'Price varies'}</p>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm border border-top border-4 border-secondary p-4">
+                                <h5 class="fw-bold">${s.name}</h5>
+                                <p class="small text-muted flex-grow-1">${s.description || 'No additional details provided.'}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                    <div class="fw-bold text-dark small"><i class="bi bi-tag-fill text-muted me-1"></i> ${s.price_range || 'Price varies'}</div>
                                     ${user && user.role === 'customer'
-                            ? `<button class="btn btn-sm btn-info text-white" onclick="requestService(${userId}, ${s.id})">Request Service</button>`
-                            : ''}
+                            ? `<button class="btn btn-sm btn-secondary" onclick="requestService(${userId}, ${s.id})">Book Service</button>`
+                            : `<a href="/login.html" class="btn btn-sm btn-outline-secondary">Login to Book</a>`}
                                 </div>
                             </div>
                         </div>
                     `).join('');
                 }
-                html += '</div>';
 
                 container.innerHTML = html;
 
             } catch (err) {
                 console.error(err);
-                container.innerHTML = '<p class="text-danger text-center">Failed to load content.</p>';
+                container.innerHTML = '<div class="col-12 text-center text-danger py-4">Failed to load portfolio content.</div>';
             }
         };
 
         window.requestService = async function (entrepreneurId, serviceId) {
-            const details = prompt('Please provide details for your request (e.g. preferred date, specific issue):');
-            if (details === null) return; // Cancelled
+            const details = prompt('Please provide details for your request (e.g., date, specifics):');
+            if (details === null) return;
 
             try {
                 const response = await fetch('/api/service-requests', {
@@ -363,94 +687,316 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert('Error requesting service');
+                showToast('Error requesting service', 'error');
             }
         };
 
-        window.buyProduct = function (entrepreneurId, productId, name, price) {
-            currentOrder = { entrepreneurId, productId };
-            document.getElementById('checkoutProductName').textContent = name;
-            document.getElementById('checkoutProductPrice').textContent = price;
+        let cartItems = [];
+        let qrTimerInterval;
+
+        window.openCart = function() {
+            renderCartUI();
+            new bootstrap.Offcanvas(document.getElementById('cartOffcanvas')).show();
+        };
+
+        window.addToCart = function (entrepreneurId, productId, name, price) {
+            cartItems.push({ entrepreneurId, productId, name, price: parseFloat(price) });
+            showToast(`${name} added to your Cart!`, 'success');
+            document.getElementById('cartBadgeCount').textContent = cartItems.length;
+        };
+
+        window.removeFromCart = function(index) {
+            cartItems.splice(index, 1);
+            document.getElementById('cartBadgeCount').textContent = cartItems.length;
+            renderCartUI();
+        };
+
+        window.renderCartUI = function() {
+            const container = document.getElementById('cartItemsContainer');
+            if(cartItems.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted my-auto pt-5"><i class="bi bi-cart-x fs-1 mb-3 d-block text-secondary"></i>Your cart is empty.</div>';
+                document.getElementById('cartSubtotal').textContent = '0.00';
+                document.getElementById('cartFee').textContent = '0.00';
+                document.getElementById('cartGrandTotal').textContent = '0.00';
+                document.getElementById('btnProceedCheckout').disabled = true;
+                return;
+            }
+
+            container.innerHTML = cartItems.map((item, idx) => `
+                <div class="bg-white p-3 rounded-lg shadow-sm border position-relative">
+                    <button class="btn btn-sm text-danger position-absolute top-0 end-0 m-1 shadow-none" onclick="removeFromCart(${idx})"><i class="bi bi-trash3-fill"></i></button>
+                    <h6 class="fw-bold mb-1 pe-4 text-truncate">${item.name}</h6>
+                    <span class="text-primary fw-bold">₹${item.price.toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
+            const fee = subtotal * 0.02; // Standard nominal 2% platform fee
+            const grandTotal = subtotal + fee;
+
+            document.getElementById('cartSubtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('cartFee').textContent = fee.toFixed(2);
+            document.getElementById('cartGrandTotal').textContent = grandTotal.toFixed(2);
+            document.getElementById('btnProceedCheckout').disabled = false;
+        };
+
+        window.proceedToCheckout = function() {
+            if(cartItems.length === 0) return;
+            
+            const firstItemName = cartItems[0].name;
+            const len = cartItems.length;
+            document.getElementById('checkoutProductName').textContent = len === 1 ? firstItemName : `${len} items (incl. ${firstItemName.substring(0,10)}...)`;
+            document.getElementById('checkoutProductPrice').textContent = document.getElementById('cartGrandTotal').textContent;
+
+            bootstrap.Offcanvas.getInstance(document.getElementById('cartOffcanvas')).hide();
             new bootstrap.Modal(document.getElementById('checkoutModal')).show();
         };
 
+        window.togglePaymentFields = function() {
+            const method = document.querySelector('input[name="payMethod"]:checked').value;
+            document.querySelectorAll('.payment-fields').forEach(f => f.classList.add('d-none'));
+            if (method === 'UPI') document.getElementById('upiFields').classList.remove('d-none');
+            else if (method === 'Card') document.getElementById('cardFields').classList.remove('d-none');
+            else if (method === 'COD') document.getElementById('codFields').classList.remove('d-none');
+        };
+
         window.confirmOrder = async function () {
-            if (!currentOrder) return;
-            const paymentMethod = document.getElementById('paymentMethod').value;
+            if (cartItems.length === 0) return showToast('Cart is empty', 'error');
+            const method = document.querySelector('input[name="payMethod"]:checked').value;
+            
+            // Basic validation
+            if (method === 'UPI' && !document.getElementById('upiId').value) return showToast('Please enter a valid UPI ID', 'error');
+            if (method === 'Card' && !document.getElementById('cardNumber').value) return showToast('Please enter your card details', 'error');
+
+            const btn = document.getElementById('btnConfirmOrder');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing Payment...';
+            btn.disabled = true;
+
+            await new Promise(r => setTimeout(r, 1000));
+
+            if (method === 'UPI') {
+                try {
+                    const price = document.getElementById('checkoutProductPrice').textContent;
+                    const upiInput = document.getElementById('upiId').value;
+                    const qrResponse = await fetch('/api/payment/generate-qr', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount: price, upiId: upiInput })
+                    });
+                    
+                    const qrData = await qrResponse.json();
+                    if(qrResponse.ok) {
+                        document.getElementById('checkoutMainScreen').classList.add('d-none');
+                        document.getElementById('paymentQrScreen').classList.remove('d-none');
+                        document.getElementById('qrImage').src = qrData.qrImage;
+                        document.getElementById('qrAmountDisplay').textContent = price;
+                        
+                        startQRTimer(qrData.expiresAt);
+                        
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                        return; // Halt flow and wait for Verify scan
+                    } else {
+                        showToast(qrData.error, 'error');
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                        return;
+                    }
+                } catch(e) {
+                    showToast('Network error generating QR code.', 'error');
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    return;
+                }
+            }
 
             try {
+                const payloadItems = cartItems.map(i => ({ entrepreneur_id: i.entrepreneurId, product_id: i.productId }));
                 const response = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        entrepreneur_id: currentOrder.entrepreneurId,
-                        product_id: currentOrder.productId,
-                        payment_method: paymentMethod
+                        items: payloadItems,
+                        payment_method: method,
+                        payment_status: method === 'COD' ? 'Pending' : 'Success'
                     })
                 });
 
                 if (response.ok) {
-                    showToast('Order placed successfully!', 'success');
-                    // Hide modal properly
-                    const modalEl = document.getElementById('checkoutModal');
-                    const modal = bootstrap.Modal.getInstance(modalEl);
-                    modal.hide();
-                    currentOrder = null;
+                    btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Success!';
+                    btn.classList.replace('btn-primary', 'btn-success');
+                    showToast('Transaction Successful!', 'success');
+                    
+                    setTimeout(() => {
+                        resetCheckoutModal();
+                        bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+                        generateInvoice(method);
+                    }, 1500);
                 } else {
                     const res = await response.json();
-                    showToast(res.error || 'Failed to place order', 'error');
+                    showToast(res.error || 'Payment declined by bank', 'error');
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
                 }
             } catch (err) {
-                console.error(err);
-                alert('Error placing order');
+                showToast('Connection interference detected', 'error');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
             }
+        };
+
+        window.startQRTimer = function(expiresAt) {
+            clearInterval(qrTimerInterval);
+            const timerEl = document.getElementById('qrTimerDisplay');
+            const verifyBtn = document.getElementById('btnVerifyUPI');
+            
+            qrTimerInterval = setInterval(() => {
+                const now = Date.now();
+                const diff = expiresAt - now;
+                
+                if (diff <= 0) {
+                    clearInterval(qrTimerInterval);
+                    timerEl.innerHTML = '<i class="bi bi-x-circle me-2"></i>EXPIRED';
+                    timerEl.classList.replace('text-danger', 'text-muted');
+                    document.getElementById('qrImage').style.filter = 'blur(6px)';
+                    verifyBtn.disabled = true;
+                    verifyBtn.innerHTML = 'Payment Session Expired';
+                } else {
+                    const minutes = Math.floor(diff / 60000);
+                    const seconds = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                    timerEl.innerHTML = `<i class="bi bi-stopwatch me-2"></i>0${minutes}:${seconds}`;
+                }
+            }, 1000);
+        };
+
+        window.verifyUPIPayment = async function() {
+            const btn = document.getElementById('btnVerifyUPI');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Waiting for Bank...';
+            btn.disabled = true;
+
+            await new Promise(r => setTimeout(r, 2000));
+            clearInterval(qrTimerInterval);
+            
+            try {
+                const payloadItems = cartItems.map(i => ({ entrepreneur_id: i.entrepreneurId, product_id: i.productId }));
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        items: payloadItems,
+                        payment_method: 'UPI',
+                        payment_status: 'Success'
+                    })
+                });
+
+                if (response.ok) {
+                    btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Payment Confirmed!';
+                    btn.classList.replace('btn-primary', 'btn-success');
+                    showToast('Transaction Successfully Verified!', 'success');
+                    
+                    setTimeout(() => {
+                        resetCheckoutModal();
+                        bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+                        generateInvoice('UPI');
+                    }, 2000);
+                } else {
+                    const res = await response.json();
+                    showToast(res.error || 'Payment declined or missed', 'error');
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                showToast('Network error verifying payment.', 'error');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        };
+
+        window.resetCheckoutModal = function() {
+            document.getElementById('checkoutMainScreen').classList.remove('d-none');
+            document.getElementById('paymentQrScreen').classList.add('d-none');
+            clearInterval(qrTimerInterval);
+            document.getElementById('qrImage').style.filter = 'none';
+            document.getElementById('btnVerifyUPI').disabled = false;
+            document.getElementById('btnVerifyUPI').innerHTML = 'I have completed the payment <i class="bi bi-check-circle-fill ms-1"></i>';
+            const btnCfm = document.getElementById('btnConfirmOrder');
+            btnCfm.innerHTML = 'Confirm & Pay Securely <i class="bi bi-arrow-right-short ms-1"></i>';
+            btnCfm.classList.replace('btn-success', 'btn-primary');
+        };
+
+        window.generateInvoice = function(method) {
+            // Populate Invoice Document
+            const d = new Date();
+            document.getElementById('invoiceDate').textContent = `Date: ${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+            document.getElementById('invoiceRef').textContent = `Ref: #HH-${Math.floor(Math.random()*900000) + 100000}`;
+            document.getElementById('invMethodBadge').textContent = method;
+
+            const tbody = document.getElementById('invoiceItemsList');
+            tbody.innerHTML = cartItems.map(item => `
+                <tr>
+                    <td class="py-3 px-4"><span class="fw-bold d-block text-dark">${item.name}</span><small class="text-muted">Item ID: ${item.productId}</small></td>
+                    <td class="py-3 px-4 text-center">1</td>
+                    <td class="py-3 px-4 text-end fw-bold">₹${item.price.toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('invSubtotal').textContent = document.getElementById('cartSubtotal').textContent;
+            document.getElementById('invFee').textContent = document.getElementById('cartFee').textContent;
+            document.getElementById('invTotal').textContent = document.getElementById('cartGrandTotal').textContent;
+
+            // Show Modal and instantly clear internal cart array
+            new bootstrap.Modal(document.getElementById('invoiceModal')).show();
+            cartItems = [];
+            document.getElementById('cartBadgeCount').textContent = '0';
+        };
+
+        window.downloadInvoicePDF = function() {
+            if(typeof html2pdf === 'undefined') {
+                return showToast('PDF Generator library is loading... please wait', 'error');
+            }
+            
+            const btn = document.querySelector('button[onclick="downloadInvoicePDF()"]');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Generating...';
+            btn.disabled = true;
+
+            const element = document.getElementById('invoicePrintArea');
+            
+            // Bypass html2canvas Scroll Offset Bug by jumping to absolute top coordinates instantly
+            const originalScroll = window.scrollY || document.documentElement.scrollTop;
+            window.scrollTo(0, 0);
+
+            const opt = {
+                margin:       [0.5, 0.5, 0.5, 0.5],
+                filename:     `HunarHub_Order_Receipt_${Date.now()}.pdf`,
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true,
+                    scrollY: 0,
+                    scrollX: 0
+                },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                window.scrollTo(0, originalScroll);
+                btn.innerHTML = '<i class="bi bi-file-earmark-pdf-fill me-2"></i> Download PDF Bill';
+                btn.disabled = false;
+                showToast('PDF downloaded successfully!', 'success');
+            }).catch(e => {
+                window.scrollTo(0, originalScroll);
+                console.error('PDF Generation Error:', e);
+                btn.innerHTML = '<i class="bi bi-file-earmark-pdf-fill me-2"></i> Download PDF Bill';
+                btn.disabled = false;
+                showToast('Failed to generate PDF. Please try again.', 'error');
+            });
         };
 
         loadEntrepreneurs();
         loadAllProducts();
     </script>
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h5>Hunar-Hub</h5>
-                    <p>Empowering local artisans and micro-entrepreneurs by connecting them with a wider community.
-                        Discover, support, and grow together.</p>
-                </div>
-                <div class="col-md-2 mb-4 col-6">
-                    <h5>Quick Links</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/explore.html">Explore</a></li>
-                        <li><a href="/register.html">Get Started</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-2 mb-4 col-6">
-                    <h5>Support</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <h5>Follow Us</h5>
-                    <div class="social-links">
-                        <a href="#"><i class="bi bi-facebook"></i></a>
-                        <a href="#"><i class="bi bi-twitter-x"></i></a>
-                        <a href="#"><i class="bi bi-instagram"></i></a>
-                        <a href="#"><i class="bi bi-linkedin"></i></a>
-                    </div>
-                    <p class="mt-3 text-muted"><i class="bi bi-geo-alt-fill me-2"></i> Local Community, Worldwide impact
-                    </p>
-                </div>
-            </div>
-            <div class="footer-bottom text-center">
-                <p>&copy; 2024 Hunar-Hub. All Rights Reserved. Created by Supporting Local Talent.</p>
-            </div>
-        </div>
-    </footer>
-
+    
 </body>
-
 </html>

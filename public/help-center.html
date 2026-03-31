@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Center | HunarHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .faq-card {
+            background: #fff;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-base);
+            cursor: pointer;
+        }
+        .faq-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        .hero-support {
+            background: var(--clr-dark);
+            padding: 100px 0;
+            margin-bottom: -50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="/">
+                <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    <i class="bi bi-layers-half"></i>
+                </div>
+                <span class="text-heading">HunarHub</span><span class="text-primary">.</span>
+            </a>
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto gap-2">
+                    <li class="nav-item"><a class="nav-link px-3" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link px-3" href="/explore.html">Explore</a></li>
+                    <li class="nav-item ms-lg-2"><a class="btn btn-outline-light rounded-pill px-4" href="/login.html">Login</a></li>
+                    <li class="nav-item"><a class="btn btn-primary rounded-pill px-4" href="/register.html">Join Us</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero-support text-white overflow-hidden">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-3 animate-slide-up">Help Center</h1>
+            <p class="lead text-white-50 mb-4 animate-slide-up" style="animation-delay: 0.1s;">How can we help you grow today?</p>
+            <div class="row justify-content-center animate-slide-up" style="animation-delay: 0.2s;">
+                <div class="col-md-6">
+                    <div class="input-group input-group-lg shadow-lg rounded-pill overflow-hidden">
+                        <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" id="faqSearch" class="form-control border-0 shadow-none" placeholder="Search for answers...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container py-5 mt-5">
+        <!-- Status Cards -->
+        <div class="row g-4 mb-5" id="helpCategories">
+            <div class="col-md-6 col-lg-4">
+                <div class="faq-card animate-slide-up" style="animation-delay: 0.3s;">
+                    <i class="bi bi-person-plus fs-3 text-primary mb-3 d-block"></i>
+                    <h5 class="fw-bold">Getting Started</h5>
+                    <p class="text-muted small">Learn how to set up your profile and list your first craft.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="faq-card animate-slide-up" style="animation-delay: 0.4s;">
+                    <i class="bi bi-wallet2 fs-3 text-primary mb-3 d-block"></i>
+                    <h5 class="fw-bold">Payments</h5>
+                    <p class="text-muted small">Information about pricing tiers, payouts, and secure transactions.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="faq-card animate-slide-up" style="animation-delay: 0.5s;">
+                    <i class="bi bi-shop fs-3 text-primary mb-3 d-block"></i>
+                    <h5 class="fw-bold">Store Management</h5>
+                    <p class="text-muted small">Managing your inventory, orders, and customer reviews.</p>
+                </div>
+            </div>
+        </div>
+
+        <section class="mt-5 pt-5 text-center">
+            <h3 class="fw-bold mb-4">Frequently Asked Questions</h3>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="accordion accordion-flush" id="faqAccordion">
+                        <div class="accordion-item border mb-3 rounded shadow-sm overflow-hidden faq-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#f1">
+                                    How do I verify my business?
+                                </button>
+                            </h2>
+                            <div id="f1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-start text-muted">Go to your Entrepreneur Dashboard, upload your business proof in the settings, and our admin team will review it within 24 hours.</div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border mb-3 rounded shadow-sm overflow-hidden faq-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#f2">
+                                    What are the service request fees?
+                                </button>
+                            </h2>
+                            <div id="f2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-start text-muted">HunarHub charges a minimal 2% platform fee on completed orders to keep the community running and secure.</div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border mb-3 rounded shadow-sm overflow-hidden faq-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#f3">
+                                    How do I contact a creator directly?
+                                </button>
+                            </h2>
+                            <div id="f3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-start text-muted">Browse the Marketplace, select a creator, and use the "Contact" button on their portfolio page to send a direct message.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="noResults" class="text-muted py-4 d-none">No matching questions found. Try searching for "verify" or "fees".</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-5 mb-lg-0">
+                    <div class="footer-logo mb-3"><i class="bi bi-layers-half"></i> HunarHub<span>.</span></div>
+                    <p class="text-white text-opacity-50 pe-lg-5">Empowering local artisans and micro-entrepreneurs by connecting them with a wider community. Discover, support, and grow together.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-2 mb-4 mb-md-0 ms-lg-auto">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/explore.html">Explore</a></li>
+                        <li><a href="/register.html">Get Started</a></li>
+                        <li><a href="/login.html">Sign In</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 col-lg-2 mb-4 mb-md-0">
+                    <h5>Support</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="/help-center.html">Help Center</a></li>
+                        <li><a href="/safety-center.html">Safety Center</a></li>
+                        <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="/terms-of-service.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <h5>Stay Updated</h5>
+                    <p class="text-white text-opacity-50 small">Join our newsletter to discover new local talent every week.</p>
+                    <div class="newsletter-group">
+                        <input type="email" class="form-control shadow-none" placeholder="Email address">
+                        <button class="btn btn-primary" type="button" onclick="showToast('Thank you for subscribing!', 'success')">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 HunarHub. All Rights Reserved.</p>
+                <p>Designed to empower <i class="bi bi-heart-fill heart-icon"></i> local communities</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('faqSearch').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.faq-item');
+            const noResults = document.getElementById('noResults');
+            let found = 0;
+
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                if (text.includes(term)) {
+                    item.classList.remove('d-none');
+                    found++;
+                } else {
+                    item.classList.add('d-none');
+                }
+            });
+
+            noResults.classList.toggle('d-none', found > 0 || term === '');
+            document.getElementById('helpCategories').classList.toggle('d-none', term !== '');
+        });
+    </script>
+</body>
+</html>
