@@ -10,12 +10,15 @@ const QRCode = require('qrcode');
 // Configure NodeMailer with Brevo SMTP
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-    port: process.env.SMTP_PORT || 587,
+    port: parseInt(process.env.SMTP_PORT) || 587,
     secure: false, // true for 465, false for other ports
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
-    }
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,   // 10 seconds
+    socketTimeout: 15000      // 15 seconds
 });
 
 async function sendEmailOTP(toEmail, toName, otpCode) {
@@ -154,8 +157,8 @@ app.post('/api/register', async (req, res) => {
         db.prepare('DELETE FROM otps WHERE email = ?').run(email);
         db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(email, otpCode, expiresAt);
 
-        // Send actual email via Brevo
-        await sendEmailOTP(email, name, otpCode);
+        // Send actual email via Brevo – asynchronous to prevent UI hang
+        sendEmailOTP(email, name, otpCode);
 
         res.status(201).json({ message: 'User created successfully. Please verify your email.', email: email });
 
@@ -245,14 +248,10 @@ app.post('/api/password/forgot', async (req, res) => {
         // Store new OTP
         db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(email, code, expiresAt);
 
-        // Send Email via Nodemailer
-        const sent = await sendPasswordResetOTP(email, user.name, code);
+        // Send Email asynchronously via Nodemailer
+        sendPasswordResetOTP(email, user.name, code);
         
-        if (sent) {
-            res.json({ message: 'Password recovery code sent to your email.' });
-        } else {
-            res.status(500).json({ error: 'Failed to send recovery email. Please try again later.' });
-        }
+        res.json({ message: 'Password recovery code sent to your email.' });
     } catch (err) {
         console.error('Forgot Password error:', err);
         res.status(500).json({ error: 'An error occurred processing your request' });
@@ -923,14 +922,10 @@ app.post('/api/otp/resend', async (req, res) => {
         // Store new OTP
         db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(email, code, expiresAt);
 
-        // Send via Brevo
-        const sent = await sendEmailOTP(email, user.name, code);
+        // Send via Brevo asynchronously
+        sendEmailOTP(email, user.name, code);
         
-        if (sent) {
-            res.json({ message: 'New verification code sent successfully to your email' });
-        } else {
-            res.status(500).json({ error: 'Failed to dispatch email' });
-        }
+        res.json({ message: 'New verification code sent successfully to your email' });
     } catch (err) {
         console.error('OTP Resend Error:', err);
         res.status(500).json({ error: 'Failed to request new code' });
