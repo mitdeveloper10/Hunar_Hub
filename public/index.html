@@ -21,13 +21,15 @@
                 </div>
                 <span class="text-heading">HunarHub</span><span class="text-primary">.</span>
             </a>
-            <button class="navbar-toggler border-0 shadow-none text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="bi bi-list fs-2"></i>
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-3 text-dark"></i>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center gap-4" id="navLinks">
                     <!-- Dynamic navigation will be injected here -->
+                    <li class="nav-item"><a class="nav-link fw-medium text-body" href="/">Home</a></li>
                     <li class="nav-item"><a class="nav-link fw-medium text-body" href="/explore.html">Explore</a></li>
+                    <li class="nav-item"><a class="nav-link fw-medium text-body" href="/contact.html">Contact Us</a></li>
                     <li class="nav-item"><a class="nav-link fw-medium text-body" href="/login.html">Sign In</a></li>
                     <li class="nav-item mt-2 mt-lg-0"><a class="btn btn-primary px-4" href="/register.html">Get Started</a></li>
                 </ul>
@@ -41,9 +43,9 @@
         <div class="position-absolute rounded-circle" style="width: 600px; height: 600px; background: radial-gradient(circle, rgba(134,93,54,0.05) 0%, transparent 70%); top: -100px; right: -100px; filter: blur(60px);"></div>
         <div class="position-absolute rounded-circle" style="width: 400px; height: 400px; background: radial-gradient(circle, rgba(62,54,46,0.05) 0%, transparent 70%); bottom: -50px; left: -50px; filter: blur(80px);"></div>
         
-        <div class="container pb-4 position-relative z-index-1">
+        <div class="container pb-4 position-relative z-index-1 mt-md-0 mt-4">
             <div class="row justify-content-center">
-                <div class="col-lg-9 animate-slide-up mt-5 pt-5">
+                <div class="col-lg-9 animate-slide-up mt-md-5 pt-md-5">
                     <span class="badge rounded-pill bg-primary text-white border border-primary px-3 py-2 mb-4 d-inline-block shadow-sm" style="letter-spacing: 0.05em; font-weight: 600;">
                         THE MODERN LOCAL MARKETPLACE
                     </span>
@@ -61,9 +63,9 @@
     </header>
 
     <!-- Dynamic Platform Stats -->
-    <div class="container py-5 position-relative" style="z-index: 5;">
-        <div class="card p-5 mx-3 mx-md-0 animate-slide-up shadow-lg border-0" style="animation-delay: 0.2s; margin-top: -80px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px);">
-            <div class="row text-center g-5">
+    <div class="container py-lg-5 py-4 position-relative" style="z-index: 5;">
+        <div class="card p-lg-5 p-4 mx-3 mx-md-0 animate-slide-up shadow-lg border-0" style="animation-delay: 0.2s; margin-top: -60px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px);">
+            <div class="row text-center g-4 g-md-5">
                 <div class="col-6 col-md-3">
                     <div class="px-3 border-end border-light">
                         <h2 class="fw-bold text-heading mb-1 display-5"><span class="counter-value" id="stat-artisans">0</span>+</h2>
@@ -303,7 +305,9 @@
             if (user) {
                 const dashboardLink = user.role === 'customer' ? '/dashboard-customer.html' : '/dashboard-entrepreneur.html';
                 navLinks.innerHTML = `
+                    <li class="nav-item"><a class="nav-link fw-medium text-body" href="/">Home</a></li>
                     <li class="nav-item"><a class="nav-link fw-medium text-body" href="/explore.html">Explore</a></li>
+                    <li class="nav-item"><a class="nav-link fw-medium text-body" href="/contact.html">Contact Us</a></li>
                     <li class="nav-item"><a class="nav-link fw-medium text-body" href="${dashboardLink}">My Dashboard</a></li>
                     <li class="nav-item mt-2 mt-lg-0"><a class="btn btn-outline-danger px-4" href="#" onclick="logout()">Logout</a></li>
                 `;

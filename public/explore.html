@@ -58,8 +58,8 @@
             <div class="ms-auto d-flex align-items-center">
                 <!-- Dynamic Navigation Container -->
             </div>
-            <button class="navbar-toggler border-0 shadow-none text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="bi bi-list fs-2"></i>
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list fs-3"></i>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center gap-3" id="navLinks">
@@ -69,20 +69,26 @@
         </div>
     </nav>
 
-    <!-- Page Header -->
-    <header class="page-header text-center" style="background: linear-gradient(180deg, var(--clr-neutral) 0%, #ffffff 100%);">
-        <div class="container animate-slide-up">
+    <header class="page-header text-center pb-5" style="background: linear-gradient(180deg, var(--clr-neutral) 0%, #ffffff 100%); padding-top: 100px;">
+        <div class="container animate-slide-up py-4">
             <h1 class="display-5 fw-bold text-heading mb-3">Explore the Marketplace</h1>
             <p class="lead text-muted mx-auto" style="max-width: 600px;">Discover unique creations and professional services from skilled local artisans.</p>
         </div>
     </header>
 
-        <!-- Main Discovery Interface -->
-    <div class="row g-4">
+    <!-- Main Discovery Interface -->
+    <div class="container py-lg-5 py-4">
+        <div class="row g-4">
         <!-- Sidebar Filters -->
         <aside class="col-lg-3">
-            <div class="sticky-top" style="top: 100px;">
-                <div class="card border-0 shadow-lg premium-card p-4">
+            <div class="d-lg-none mb-4 pb-2">
+                <button class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center py-3 px-4 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                    <span class="fw-bold"><i class="bi bi-sliders2 me-2"></i> Filters & Search</span>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+            </div>
+            <div class="collapse d-lg-block sticky-top" id="filterCollapse" style="top: 100px; z-index: 99;">
+                <div class="card border-0 shadow-lg premium-card p-4 mt-lg-n4">
                     <h5 class="fw-bold mb-4 d-flex align-items-center">
                         <i class="bi bi-sliders2 text-primary me-2"></i> Refine Search
                     </h5>
@@ -124,7 +130,7 @@
 
         <!-- Main Listing Area -->
         <div class="col-lg-9">
-            <div class="d-flex align-items-center justify-content-between mb-5">
+            <div class="d-flex align-items-center justify-content-between mb-4">
                 <h3 class="fw-bold mb-0 text-heading">Featured Creators</h3>
                 <span class="badge bg-secondary text-white border-0 px-3 py-2 rounded-pill">Top Talent</span>
             </div>
@@ -138,12 +144,13 @@
                         <h3 class="fw-bold text-heading">Marketplace Explorer</h3>
                         <p class="text-muted">Unique handcrafted products from across the hub.</p>
                     </div>
-                    <div id="allProductsList" class="row g-4">
+                    <div id="allProductsList" class="row g-3 g-md-4">
                         <div class="col-12 text-center py-5"><span class="spinner-border text-primary"></span></div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- Shopping Cart FAB -->
@@ -430,6 +437,15 @@
         </div>
     </footer>
 
+    <style>
+        @media (max-width: 991px) {
+            .page-header { padding: 100px 0 40px; }
+            .filter-card { margin-top: 0; margin-bottom: 2rem; }
+            #filterCollapse.collapse:not(.show) { display: none; }
+            #filterCollapse.collapsing { display: block; }
+        }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const user = JSON.parse(localStorage.getItem('user'));
@@ -439,13 +455,17 @@
             if (user) {
                 const dashboardLink = user.role === 'customer' ? '/dashboard-customer.html' : '/dashboard-entrepreneur.html';
                 navLinks.innerHTML = `
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="/explore.html">Explore</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact.html">Contact Us</a></li>
                     <li class="nav-item"><a class="nav-link" href="${dashboardLink}">My Dashboard</a></li>
                     <li class="nav-item ms-lg-2"><a class="btn btn-outline-danger btn-sm px-4" href="#" onclick="logout()">Logout</a></li>
                 `;
             } else {
                 navLinks.innerHTML = `
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="/explore.html">Explore</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact.html">Contact Us</a></li>
                     <li class="nav-item"><a class="nav-link fw-bold" href="/login.html">Sign In</a></li>
                     <li class="nav-item ms-lg-2"><a class="btn btn-primary px-4" href="/register.html">Get Started</a></li>
                 `;

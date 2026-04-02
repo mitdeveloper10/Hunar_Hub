@@ -36,6 +36,7 @@ body {
     color: var(--text-body);
     line-height: 1.6;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* 1. NAVBAR (Sticky + Hover Effects) */
@@ -97,6 +98,10 @@ body {
     padding: 0.75rem 1.75rem;
     transition: var(--transition);
     border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .btn-sm {
@@ -617,5 +622,147 @@ body:has(#loginForm) .auth-container h3::before {
 
     100% {
         transform: translateY(0px);
+    }
+}
+/* 11. MOBILE & RESPONSIVENESS OVERRIDES */
+@media (max-width: 991px) {
+    :root {
+        --radius-lg: 12px;
+    }
+
+    h1 { font-size: calc(1.8rem + 1.5vw) !important; }
+    h2 { font-size: calc(1.5rem + 1vw) !important; }
+    
+    .navbar {
+        padding: 0.75rem 0 !important;
+    }
+
+    .navbar-toggler {
+        color: var(--clr-dark) !important;
+        background: transparent !important;
+        border: 1px solid var(--border-subtle) !important;
+        padding: 0.25rem 0.6rem !important;
+        border-radius: var(--radius-sm) !important;
+    }
+
+    .navbar-toggler i {
+        color: var(--clr-dark) !important;
+    }
+
+    .navbar-collapse {
+        background: white !important;
+        margin-top: 0.75rem;
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-subtle);
+    }
+
+    .navbar-nav {
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+
+    .nav-link::after { display: none; }
+    
+    .btn {
+        width: 100%;
+        padding: 0.85rem 1.5rem;
+    }
+
+    .hero-section {
+        min-height: auto !important;
+        padding: 6rem 0 4rem !important;
+    }
+
+    .stat-card {
+        padding: 1.25rem;
+    }
+
+    .footer {
+        padding: 4rem 0 2rem !important;
+        text-align: center;
+    }
+
+    .footer h5::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .footer-logo, .social-links, .footer-bottom {
+        justify-content: center !important;
+    }
+
+    .newsletter-group {
+        flex-direction: column;
+        border-radius: var(--radius-md);
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+
+    .newsletter-group input {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: var(--radius-pill) !important;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem 1.25rem !important;
+    }
+
+    /* Auth Pages Mobile */
+    .auth-container {
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+    }
+
+    /* Dashboard Sidebar Mobile */
+    .sidebar {
+        min-height: auto !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-subtle);
+        width: 100% !important;
+    }
+
+    .sidebar .nav {
+        flex-direction: row !important;
+        overflow-x: auto;
+        padding: 0.5rem 1rem !important;
+        gap: 0.5rem;
+        scrollbar-width: none;
+    }
+
+    .sidebar .nav::-webkit-scrollbar { display: none; }
+
+    .sidebar .nav-link {
+        white-space: nowrap;
+        padding: 0.5rem 1rem !important;
+        margin: 0 !important;
+    }
+
+    .sidebar-heading, .sidebar .mt-auto {
+        display: none !important;
+    }
+
+    .content-area {
+        padding: 1.25rem !important;
+    }
+}
+
+@media (max-width: 575px) {
+    .container {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+    
+    .card {
+        padding: 1.25rem !important;
+    }
+
+    .hero-section h1 {
+        font-size: 2.25rem !important;
+    }
+    
+    .display-5 {
+        font-size: 2rem !important;
     }
 }

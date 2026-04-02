@@ -34,14 +34,15 @@
     <div class="layout-wrapper flex-grow-1">
         <!-- SaaS Minimalist Sidebar -->
         <aside class="sidebar d-flex flex-column p-0 border-end shadow-sm" style="background: #ffffff; border-color: var(--border-color) !important;">
-            <div class="p-4 border-bottom mb-3" style="border-color: var(--border-color) !important;">
+            <div class="p-3 p-md-4 border-bottom mb-2 mb-md-3" style="border-color: var(--border-color) !important;">
                 <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-heading mb-0" href="/">
                     <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
                         <i class="bi bi-layers-half"></i>
                     </div>
                     <div>
-                        <span class="fs-5 d-block text-white">HunarHub</span>
-                        <span class="text-primary small fw-bold" style="letter-spacing: 0.1em; font-size: 0.6rem;">CUSTOMER PORTAL</span>
+                        <span class="fs-6 d-block d-md-none text-dark">HunarHub</span>
+                        <span class="fs-5 d-none d-md-block text-dark">HunarHub</span>
+                        <span class="text-primary small fw-bold d-none d-md-block" style="letter-spacing: 0.1em; font-size: 0.6rem;">CUSTOMER PORTAL</span>
                     </div>
                 </a>
             </div>
@@ -61,16 +62,16 @@
 
         <!-- Main Content Column -->
         <main class="content-area">
-            <header class="d-flex justify-content-between align-items-center mb-5 animate-slide-up">
+            <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 mb-md-5 animate-slide-up gap-3">
                 <div>
-                    <h2 class="fw-bold text-heading mb-1">Customer Dashboard</h2>
+                    <h2 class="fw-bold text-heading mb-1 fs-3">Customer Dashboard</h2>
                     <p class="text-muted small mb-0">Welcome back, <span class="fw-bold text-primary" id="welcomeMsg">Customer</span></p>
                 </div>
                 <div class="d-flex gap-2">
                     <button class="btn btn-white glass-pane border shadow-sm btn-sm px-3"><i class="bi bi-bell"></i></button>
                     <div class="bg-white rounded-pill px-3 py-1 border shadow-sm d-flex align-items-center gap-2">
                         <div class="bg-primary rounded-circle" style="width: 8px; height: 8px;"></div>
-                        <span class="small fw-bold">Active Session</span>
+                        <span class="small fw-bold">Active</span>
                     </div>
                 </div>
             </header>
