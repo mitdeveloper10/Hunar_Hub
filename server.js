@@ -6,11 +6,13 @@ const path = require('path');
 const db = require('./database');
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
-const Brevo = require('@getbrevo/brevo');
+const Brevo = require('sib-api-v3-sdk');
 
 // Configure Brevo API
+const defaultClient = Brevo.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.SMTP_PASS;
 const apiInstance = new Brevo.TransactionalEmailsApi();
-apiInstance.authentications['apiKey'].apiKey = process.env.SMTP_PASS;
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
