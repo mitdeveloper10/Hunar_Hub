@@ -98,7 +98,7 @@ const schema = `
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT NOT NULL,
     code TEXT NOT NULL,
-    expires_at DATETIME NOT NULL
+    expires_at INTEGER NOT NULL
   );
 `;
 

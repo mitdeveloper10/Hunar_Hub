@@ -6,8 +6,12 @@ const path = require('path');
 const db = require('./database');
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
+const Brevo = require('@getbrevo/brevo');
 
-// Configure NodeMailer with Brevo SMTP
+// Configure Brevo API
+const apiInstance = new Brevo.TransactionalEmailsApi();
+apiInstance.authentications['apiKey'].apiKey = process.env.SMTP_PASS;
+
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
     port: parseInt(process.env.SMTP_PORT) || 587,
@@ -16,75 +20,86 @@ const transporter = nodemailer.createTransport({
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
     },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,   // 10 seconds
-    socketTimeout: 15000      // 15 seconds
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000
 });
 
 async function sendEmailOTP(toEmail, toName, otpCode) {
-    const mailOptions = {
-        from: `"HunarHub Welcome" <${process.env.EMAIL_FROM}>`,
-        to: toEmail,
-        subject: "HunarHub - Your Verification Code",
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #3E362E;">
-                <div style="text-align: center; padding: 20px 0; background-color: #fcfcfc;">
-                    <h2 style="color: #865D36;">HunarHub</h2>
-                </div>
-                <div style="padding: 30px; background-color: #ffffff; border: 1px solid #eeeeee; border-radius: 8px;">
-                    <h3>Hello ${toName},</h3>
-                    <p>Welcome to HunarHub! To activate your account, please enter the following 6-digit verification code below:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #865D36; padding: 10px 20px; background-color: #f8fafc; border-radius: 8px; border: 1px dashed #A69080;">${otpCode}</span>
-                    </div>
-                    <p style="color: #666; font-size: 14px;"><em>This code will expire in 5 minutes.</em></p>
-                    <hr style="border: none; border-top: 1px solid #eeeeee; margin: 20px 0;" />
-                    <p style="color: #999; font-size: 12px; margin: 0;">If you didn't request this, please ignore this email.</p>
-                </div>
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
+    sendSmtpEmail.subject = "HunarHub - Your Verification Code";
+    sendSmtpEmail.htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #3E362E;">
+            <div style="text-align: center; padding: 20px 0; background-color: #fcfcfc;">
+                <h2 style="color: #865D36;">HunarHub</h2>
             </div>
-        `
-    };
+            <div style="padding: 30px; background-color: #ffffff; border: 1px solid #eeeeee; border-radius: 8px;">
+                <h3>Hello ${toName},</h3>
+                <p>Welcome to HunarHub! To activate your account, please enter the following 6-digit verification code below:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #865D36; padding: 10px 20px; background-color: #f8fafc; border-radius: 8px; border: 1px dashed #A69080;">${otpCode}</span>
+                </div>
+                <p style="color: #666; font-size: 14px;"><em>This code will expire in 5 minutes.</em></p>
+                <hr style="border: none; border-top: 1px solid #eeeeee; margin: 20px 0;" />
+                <p style="color: #999; font-size: 12px; margin: 0;">If you didn't request this, please ignore this email.</p>
+            </div>
+        </div>
+    `;
+    sendSmtpEmail.sender = { name: "HunarHub Welcome", email: process.env.EMAIL_FROM };
+    sendSmtpEmail.to = [{ email: toEmail, name: toName }];
 
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`[SMTP] OTP Email successfully sent to ${toEmail}. Message ID: ${info.messageId}`);
+        const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log(`[Brevo API] OTP Email successfully sent to ${toEmail}. Response:`, JSON.stringify(data));
         return true;
     } catch (error) {
-        console.error('[SMTP] Error sending email:', error);
-        return false;
+        console.error('[Brevo API] Error sending email:', error);
+        // Fallback to SMTP if API fails
+        try {
+            console.log('[SMTP] Attempting fallback to SMTP...');
+            await transporter.sendMail({
+                from: `"HunarHub Welcome" <${process.env.EMAIL_FROM}>`,
+                to: toEmail,
+                subject: "HunarHub - Your Verification Code (Fallback)",
+                html: sendSmtpEmail.htmlContent
+            });
+            return true;
+        } catch (smtpError) {
+            console.error('[SMTP Fallback] also failed:', smtpError);
+            return false;
+        }
     }
 }
 
 async function sendPasswordResetOTP(toEmail, toName, otpCode) {
-    const mailOptions = {
-        from: `"HunarHub Security" <${process.env.EMAIL_FROM}>`,
-        to: toEmail,
-        subject: "HunarHub - Password Reset Code",
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #3E362E;">
-                <div style="text-align: center; padding: 20px 0; background-color: #fcfcfc;">
-                    <h2 style="color: #865D36;">HunarHub</h2>
-                </div>
-                <div style="padding: 30px; background-color: #ffffff; border: 1px solid #eeeeee; border-radius: 8px;">
-                    <h3>Hello ${toName},</h3>
-                    <p>We received a request to reset the password for your HunarHub account. Enter the following 6-digit code to securely reset your password:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #865D36; padding: 10px 20px; background-color: #f8fafc; border-radius: 8px; border: 1px dashed #A69080;">${otpCode}</span>
-                    </div>
-                    <p style="color: #666; font-size: 14px;"><em>This code will expire in 5 minutes.</em></p>
-                    <hr style="border: none; border-top: 1px solid #eeeeee; margin: 20px 0;" />
-                    <p style="color: #999; font-size: 12px; margin: 0;">If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
-                </div>
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
+    sendSmtpEmail.subject = "HunarHub - Password Reset Code";
+    sendSmtpEmail.htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #3E362E;">
+            <div style="text-align: center; padding: 20px 0; background-color: #fcfcfc;">
+                <h2 style="color: #865D36;">HunarHub</h2>
             </div>
-        `
-    };
+            <div style="padding: 30px; background-color: #ffffff; border: 1px solid #eeeeee; border-radius: 8px;">
+                <h3>Hello ${toName},</h3>
+                <p>We received a request to reset the password for your HunarHub account. Enter the following 6-digit code to securely reset your password:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #865D36; padding: 10px 20px; background-color: #f8fafc; border-radius: 8px; border: 1px dashed #A69080;">${otpCode}</span>
+                </div>
+                <p style="color: #666; font-size: 14px;"><em>This code will expire in 5 minutes.</em></p>
+                <hr style="border: none; border-top: 1px solid #eeeeee; margin: 20px 0;" />
+                <p style="color: #999; font-size: 12px; margin: 0;">If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
+            </div>
+        </div>
+    `;
+    sendSmtpEmail.sender = { name: "HunarHub Security", email: process.env.EMAIL_FROM };
+    sendSmtpEmail.to = [{ email: toEmail, name: toName }];
 
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`[SMTP] Password Reset OTP Email successfully sent to ${toEmail}. Message ID: ${info.messageId}`);
+        await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log(`[Brevo API] Password Reset OTP Email successfully sent to ${toEmail}`);
         return true;
     } catch (error) {
-        console.error('[SMTP] Error sending password reset email:', error);
+        console.error('[Brevo API] Error sending password reset email:', error);
         return false;
     }
 }
@@ -107,7 +122,8 @@ app.use(session({
 
 // Register
 app.post('/api/register', async (req, res) => {
-    const { name, email, password, role, business_name, bio, category, location } = req.body;
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
+    const { name, password, role, business_name, bio, category, location } = req.body;
 
     if (!name || !email || !password || !role) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -152,7 +168,7 @@ app.post('/api/register', async (req, res) => {
 
         // Generate OTP and send email
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 5 * 60000).toISOString(); // 5 mins
+        const expiresAt = Math.floor(Date.now() / 1000) + 300; // 5 mins from now (Unix timestamp)
 
         db.prepare('DELETE FROM otps WHERE email = ?').run(email);
         db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(email, otpCode, expiresAt);
@@ -173,11 +189,13 @@ app.post('/api/register', async (req, res) => {
 
 // Verify OTP
 app.post('/api/register/verify', (req, res) => {
-    const { email, otp_code } = req.body;
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
+    const { otp_code } = req.body;
     if (!email || !otp_code) return res.status(400).json({ error: 'Email and OTP code are required' });
 
     try {
-        const otpCheck = db.prepare('SELECT * FROM otps WHERE email = ? AND code = ? AND expires_at > CURRENT_TIMESTAMP').get(email, otp_code);
+        const currentTime = Math.floor(Date.now() / 1000);
+        const otpCheck = db.prepare('SELECT * FROM otps WHERE email = ? AND code = ? AND expires_at > ?').get(email, otp_code, currentTime);
         if (!otpCheck) {
             return res.status(400).json({ error: 'Invalid or expired OTP' });
         }
@@ -199,7 +217,8 @@ app.post('/api/register/verify', (req, res) => {
 
 // Login
 app.post('/api/login', async (req, res) => {
-    const { email, password } = req.body;
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
+    const { password } = req.body;
 
     try {
         const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
@@ -229,7 +248,7 @@ app.post('/api/login', async (req, res) => {
 
 // Forgot Password - Send OTP
 app.post('/api/password/forgot', async (req, res) => {
-    const { email } = req.body;
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
     if (!email) return res.status(400).json({ error: 'Email address is required' });
 
     try {
@@ -240,7 +259,7 @@ app.post('/api/password/forgot', async (req, res) => {
         }
 
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 5 * 60000).toISOString(); // 5 mins
+        const expiresAt = Math.floor(Date.now() / 1000) + 300; // 5 mins
 
         // Delete previous OTPs for this email
         db.prepare('DELETE FROM otps WHERE email = ?').run(email);
@@ -260,7 +279,8 @@ app.post('/api/password/forgot', async (req, res) => {
 
 // Reset Password - Verify OTP & Update DB
 app.post('/api/password/reset', async (req, res) => {
-    const { email, otp_code, new_password } = req.body;
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
+    const { otp_code, new_password } = req.body;
 
     if (!email || !otp_code || !new_password) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -272,7 +292,8 @@ app.post('/api/password/reset', async (req, res) => {
     }
 
     try {
-        const otpCheck = db.prepare('SELECT * FROM otps WHERE email = ? AND code = ? AND expires_at > CURRENT_TIMESTAMP').get(email, otp_code);
+        const currentTime = Math.floor(Date.now() / 1000);
+        const otpCheck = db.prepare('SELECT * FROM otps WHERE email = ? AND code = ? AND expires_at > ?').get(email, otp_code, currentTime);
         if (!otpCheck) {
             return res.status(400).json({ error: 'Invalid or expired recovery code' });
         }
@@ -906,7 +927,7 @@ app.get('/api/stats-overview', (req, res) => {
 
 // OTP Resend Implementation
 app.post('/api/otp/resend', async (req, res) => {
-    const { email } = req.body;
+    const email = req.body.email ? req.body.email.toLowerCase().trim() : '';
     if (!email) return res.status(400).json({ error: 'Email required' });
 
     try {
@@ -914,7 +935,7 @@ app.post('/api/otp/resend', async (req, res) => {
         if (!user) return res.status(404).json({ error: 'Account not found. Please register.' });
 
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 5 * 60000).toISOString(); // 5 mins
+        const expiresAt = Math.floor(Date.now() / 1000) + 300; // 5 mins
 
         // Delete previous OTPs for this email
         db.prepare('DELETE FROM otps WHERE email = ?').run(email);
