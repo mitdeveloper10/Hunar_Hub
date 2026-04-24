@@ -1,5 +1,6 @@
 const sqlite3 = require('better-sqlite3');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 
 const dbPath = path.join(__dirname, 'platform.sqlite');
 console.log('Opening database at:', dbPath);
@@ -130,5 +131,32 @@ try {
 } catch (err) {
   console.error('Database migration error:', err);
 }
+
+// Automatic Admin Seeding
+const seedAdmin = () => {
+  try {
+    const adminEmail = 'admin@hunarhub.com';
+    const adminExists = db.prepare('SELECT * FROM users WHERE email = ?').get(adminEmail);
+
+    if (!adminExists) {
+      console.log('Seeding: No admin found, creating default admin account...');
+      const hashedPassword = bcrypt.hashSync('adminpassword', 10);
+      db.prepare('INSERT INTO users (name, email, password_hash, role, is_verified) VALUES (?, ?, ?, ?, ?)').run(
+        'Admin User',
+        adminEmail,
+        hashedPassword,
+        'admin',
+        1
+      );
+      console.log('Seeding: Admin account created (admin@hunarhub.com / adminpassword)');
+    } else {
+      console.log('Seeding Check: Admin account already exists.');
+    }
+  } catch (err) {
+    console.error('Seeding Error:', err.message);
+  }
+};
+
+seedAdmin();
 
 module.exports = db;
