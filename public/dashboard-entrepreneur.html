@@ -28,8 +28,10 @@
             border-top: 4px solid var(--secondary-color);
         }
         
-        .product-img-card { height: 180px; object-fit: cover; border-radius: var(--radius-sm); }
+        .product-img-card { height: 200px; width: 100%; object-fit: cover; border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
         .sticky-form { position: sticky; top: 2rem; }
+        .product-card-fixed { transition: transform 0.2s; }
+        .product-card-fixed:hover { transform: translateY(-5px); }
     </style>
 </head>
 
@@ -366,15 +368,15 @@
                 // Render Products
                 const prodCon = document.getElementById('productsList');
                 prodCon.innerHTML = products.map(p => `
-                    <div class="col-md-6 mb-4">
-                        <div class="card h-100 border-0 shadow-sm glass-pane overflow-hidden">
-                            <img src="${p.images?.[0] || 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400'}" class="product-img-card">
+                    <div class="col-12 col-xl-6 mb-4">
+                        <div class="card h-100 border-0 shadow-sm overflow-hidden product-card-fixed">
+                            <img src="${p.images?.[0] || 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400'}" class="product-img-card" alt="${p.name}">
                             <div class="p-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="fw-bold mb-0">${p.name}</h6>
+                                    <h6 class="fw-bold mb-0 text-truncate" style="max-width: 70%;">${p.name}</h6>
                                     <span class="text-primary fw-bold">₹${parseFloat(p.price).toFixed(2)}</span>
                                 </div>
-                                <p class="small text-muted mb-0 text-truncate">${p.description || ''}</p>
+                                <p class="small text-muted mb-0" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 38px;">${p.description || 'No description provided.'}</p>
                             </div>
                         </div>
                     </div>

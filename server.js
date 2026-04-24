@@ -387,8 +387,9 @@ app.get('/api/products/recent', (req, res) => {
         let params = [];
 
         if (q) {
-            conditions.push("p.name LIKE ?");
-            params.push(`%${q}%`);
+            conditions.push("(p.name LIKE ? OR p.description LIKE ?)");
+            const searchTerm = `%${q}%`;
+            params.push(searchTerm, searchTerm);
         }
 
         if (category && category !== '') {
