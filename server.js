@@ -528,6 +528,63 @@ app.post('/api/products', upload.array('images', 5), (req, res) => {
     }
 });
 
+// Delete Product (Entrepreneur only)
+app.delete('/api/products/:id', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'entrepreneur') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        console.log(`[Delete] User ${req.session.user.id} attempting to delete product ${req.params.id}`);
+        const stmt = db.prepare('DELETE FROM products WHERE id = ? AND entrepreneur_id = ?');
+        const info = stmt.run(req.params.id, req.session.user.id);
+
+        if (info.changes === 0) {
+            console.warn(`[Delete] Failed: No match found for Product ID ${req.params.id} and Owner ${req.session.user.id}`);
+            return res.status(404).json({ error: 'Product not found or unauthorized' });
+        }
+
+        console.log(`[Delete] Successfully removed product ${req.params.id}`);
+        // Also delete associated images from the product_images table
+        db.prepare('DELETE FROM product_images WHERE product_id = ?').run(req.params.id);
+
+        res.json({ message: 'Product deleted successfully' });
+    } catch (err) {
+        console.error('[Delete] Server Error:', err.message);
+        res.status(500).json({ error: 'Failed to delete product' });
+    }
+});
+
+// Update Product (Entrepreneur only)
+app.put('/api/products/:id', (req, res) => {
+    if (!req.session.user || req.session.user.role !== 'entrepreneur') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const { name, price, description } = req.body;
+    if (!name || !price) {
+        return res.status(400).json({ error: 'Name and price are required' });
+    }
+
+    try {
+        const stmt = db.prepare(`
+            UPDATE products 
+            SET name = ?, price = ?, description = ? 
+            WHERE id = ? AND entrepreneur_id = ?
+        `);
+        const info = stmt.run(name, price, description, req.params.id, req.session.user.id);
+
+        if (info.changes === 0) {
+            return res.status(404).json({ error: 'Product not found or unauthorized' });
+        }
+
+        res.json({ message: 'Product updated successfully' });
+    } catch (err) {
+        console.error('[Update] Server Error:', err.message);
+        res.status(500).json({ error: 'Failed to update product' });
+    }
+});
+
 // Place Order (Customer only) - Supports Bulk Actions (Cart)
 app.post('/api/orders', (req, res) => {
     if (!req.session.user || req.session.user.role !== 'customer') {
@@ -634,6 +691,65 @@ app.post('/api/logout', (req, res) => {
         if (err) return res.status(500).json({ error: 'Logout failed' });
         res.json({ message: 'Logged out successfully' });
     });
+});
+
+// Profile Management
+app.get('/api/profile', (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+    
+    try {
+        let user;
+        if (req.session.user.role === 'entrepreneur') {
+            user = db.prepare(`
+                SELECT u.name, u.email, u.phone, u.profile_image, e.business_name, e.bio, e.category, e.location 
+                FROM users u
+                JOIN entrepreneurs e ON u.id = e.user_id
+                WHERE u.id = ?
+            `).get(req.session.user.id);
+        } else {
+            user = db.prepare('SELECT name, email, phone, profile_image FROM users WHERE id = ?').get(req.session.user.id);
+        }
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch profile' });
+    }
+});
+
+app.post('/api/profile', upload.single('profile_image'), (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { name, phone, business_name, bio, category, location } = req.body;
+    const profileImagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    try {
+        const updateProfile = db.transaction(() => {
+            // Update users table
+            if (profileImagePath) {
+                db.prepare('UPDATE users SET name = ?, phone = ?, profile_image = ? WHERE id = ?').run(name, phone, profileImagePath, req.session.user.id);
+            } else {
+                db.prepare('UPDATE users SET name = ?, phone = ? WHERE id = ?').run(name, phone, req.session.user.id);
+            }
+
+            // Update entrepreneurs table if applicable
+            if (req.session.user.role === 'entrepreneur') {
+                db.prepare(`
+                    UPDATE entrepreneurs 
+                    SET business_name = ?, bio = ?, category = ?, location = ?
+                    WHERE user_id = ?
+                `).run(business_name, bio, category, location, req.session.user.id);
+            }
+        });
+
+        updateProfile();
+        
+        // Update session name if changed
+        req.session.user.name = name;
+        
+        res.json({ message: 'Profile updated successfully!', profile_image: profileImagePath });
+    } catch (err) {
+        console.error('Profile update error:', err);
+        res.status(500).json({ error: 'Failed to update profile' });
+    }
 });
 
 // --- NEW APIs (HunarHub) ---

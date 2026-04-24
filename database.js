@@ -19,6 +19,7 @@ const schema = `
     password_hash TEXT NOT NULL,
     role TEXT CHECK(role IN ('customer', 'entrepreneur', 'admin')) NOT NULL,
     is_verified INTEGER DEFAULT 0,
+    profile_image TEXT DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -116,6 +117,10 @@ try {
   if (!userColumns.some(c => c.name === 'is_verified')) {
     db.prepare('ALTER TABLE users ADD COLUMN is_verified INTEGER DEFAULT 1').run();
     console.log('Added is_verified column to users table, defaulted to 1 for existing users');
+  }
+  if (!userColumns.some(c => c.name === 'profile_image')) {
+    db.prepare('ALTER TABLE users ADD COLUMN profile_image TEXT DEFAULT NULL').run();
+    console.log('Added profile_image column to users table');
   }
 
   // Migration for orders table

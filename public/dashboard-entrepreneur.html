@@ -68,6 +68,7 @@
                 <a class="nav-link py-2 my-1" href="#" onclick="switchTab('services', this)"><i class="bi bi-tools me-3"></i> Service Menu</a>
                 <a class="nav-link py-2 my-1" href="#" onclick="switchTab('orders', this)"><i class="bi bi-cart-check-fill me-3"></i> Sales Activity</a>
                 <a class="nav-link py-2 my-1" href="#" onclick="switchTab('requests', this)"><i class="bi bi-calendar-check me-3"></i> Service Flow</a>
+                <a class="nav-link py-2 my-1" href="#" onclick="switchTab('profile', this)"><i class="bi bi-person-circle me-3"></i> Profile Settings</a>
                 
                 <div class="mt-auto p-4">
                     <a class="nav-link text-danger rounded px-4 py-2 border border-danger border-opacity-10" href="#" onclick="logout()" style="background: rgba(239, 68, 68, 0.05);"><i class="bi bi-box-arrow-left me-2"></i> Log Out</a>
@@ -274,8 +275,100 @@
                     </div>
                 </div>
             </div>
+
+            <!-- PROFILE TAB -->
+            <div id="tab-profile" class="tab-pane d-none">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm overflow-hidden">
+                            <div class="card-header bg-white border-bottom py-3">
+                                <h5 class="fw-bold mb-0">Profile Settings</h5>
+                            </div>
+                            <div class="card-body p-4 p-md-5">
+                                <form id="profileForm">
+                                    <div class="text-center mb-5">
+                                        <div class="position-relative d-inline-block">
+                                            <img src="" id="profilePreview" class="rounded-circle border shadow-sm mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                                            <label for="profileImgInput" class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle p-2 shadow" style="transform: translate(10%, -10%); cursor: pointer;">
+                                                <i class="bi bi-camera"></i>
+                                            </label>
+                                            <input type="file" id="profileImgInput" name="profile_image" class="d-none" accept="image/*" onchange="previewImage(this)">
+                                        </div>
+                                        <h6 class="fw-bold mt-2">Personal Identity</h6>
+                                    </div>
+
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Full Name</label>
+                                            <input type="text" name="name" id="profName" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Phone Number</label>
+                                            <input type="text" name="phone" id="profPhone" class="form-control">
+                                        </div>
+                                        
+                                        <hr class="my-4">
+                                        <h6 class="fw-bold mb-0">Business Information</h6>
+
+                                        <div class="col-12">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Business Name</label>
+                                            <input type="text" name="business_name" id="profBusName" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Category</label>
+                                            <input type="text" name="category" id="profCat" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Location</label>
+                                            <input type="text" name="location" id="profLoc" class="form-control">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label small fw-bold text-muted text-uppercase">Bio / Description</label>
+                                            <textarea name="bio" id="profBio" class="form-control" rows="4"></textarea>
+                                        </div>
+
+                                        <div class="col-12 mt-5">
+                                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3 shadow-lg fw-bold">Save Profile Changes</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal fade" id="editProductModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light border-bottom py-3">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i> Edit Product</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="editProductForm">
+                        <input type="hidden" id="editProductId">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Product Title</label>
+                            <input type="text" id="editProductName" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Price (₹)</label>
+                            <input type="number" step="0.01" id="editProductPrice" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Description</label>
+                            <textarea id="editProductDesc" class="form-control" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
     <footer class="footer">
@@ -344,13 +437,32 @@
                 products: 'My Portfolio', 
                 services: 'Service Offerings', 
                 orders: 'Manage Orders', 
-                requests: 'Manage Requests' 
+                requests: 'Manage Requests',
+                profile: 'Profile Settings'
             };
             document.getElementById('pageTitle').innerText = titles[tabId] || 'Dashboard';
         }
 
         async function loadData() {
             try {
+                // Fetch Profile first
+                const profRes = await fetch('/api/profile');
+                const profile = await profRes.json();
+                
+                // Update UI Avatar and Name
+                const displayImg = profile.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=865D36&color=fff&size=80`;
+                document.getElementById('userAvatar').src = displayImg;
+                document.getElementById('welcomeMsg').textContent = profile.name;
+                
+                // Populate Profile Form
+                document.getElementById('profilePreview').src = displayImg;
+                document.getElementById('profName').value = profile.name || '';
+                document.getElementById('profPhone').value = profile.phone || '';
+                document.getElementById('profBusName').value = profile.business_name || '';
+                document.getElementById('profCat').value = profile.category || '';
+                document.getElementById('profLoc').value = profile.location || '';
+                document.getElementById('profBio').value = profile.bio || '';
+
                 // Counts
                 const resProducts = await fetch('/api/products/' + user.id);
                 if (resProducts.status === 401 || resProducts.status === 403) return logout();
@@ -369,7 +481,15 @@
                 const prodCon = document.getElementById('productsList');
                 prodCon.innerHTML = products.map(p => `
                     <div class="col-12 col-xl-6 mb-4">
-                        <div class="card h-100 border-0 shadow-sm overflow-hidden product-card-fixed">
+                        <div class="card h-100 border-0 shadow-sm overflow-hidden product-card-fixed position-relative">
+                            <div class="position-absolute top-0 end-0 m-2 d-flex gap-1 z-index-1">
+                                <button class="btn btn-sm btn-white shadow-sm border" onclick="openEditModal(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${(p.description||'').replace(/'/g, "\\'").replace(/\n/g, "\\n")}')" title="Edit Product">
+                                    <i class="bi bi-pencil-fill text-primary"></i>
+                                </button>
+                                <button class="btn btn-sm btn-white shadow-sm border" onclick="deleteProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}')" title="Delete Product">
+                                    <i class="bi bi-trash3-fill text-danger"></i>
+                                </button>
+                            </div>
                             <img src="${p.images?.[0] || 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400'}" class="product-img-card" alt="${p.name}">
                             <div class="p-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -465,6 +585,105 @@
                 if (res.ok) { showToast('Status updated!', 'success'); loadData(); }
             } catch (err) { console.error(err); }
         }
+
+        async function deleteProduct(id, name) {
+            if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+            
+            try {
+                const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('Product deleted successfully', 'success');
+                    loadData();
+                } else {
+                    showToast('Failed to delete product', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('An error occurred', 'error');
+            }
+        }
+
+        const editModal = new bootstrap.Modal(document.getElementById('editProductModal'));
+        function openEditModal(id, name, price, desc) {
+            document.getElementById('editProductId').value = id;
+            document.getElementById('editProductName').value = name;
+            document.getElementById('editProductPrice').value = price;
+            document.getElementById('editProductDesc').value = desc;
+            editModal.show();
+        }
+
+        document.getElementById('editProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editProductId').value;
+            const data = {
+                name: document.getElementById('editProductName').value,
+                price: document.getElementById('editProductPrice').value,
+                description: document.getElementById('editProductDesc').value
+            };
+
+            const btn = e.target.querySelector('button');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/products/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    showToast('Product updated successfully!', 'success');
+                    editModal.hide();
+                    loadData();
+                } else {
+                    showToast('Failed to update product', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('An error occurred', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profilePreview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData(e.target);
+                const res = await fetch('/api/profile', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (res.ok) {
+                    showToast('Profile updated successfully!', 'success');
+                    loadData();
+                } else {
+                    showToast('Failed to update profile', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('A network error occurred', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
 
         document.getElementById('addProductForm').addEventListener('submit', async (e) => {
             e.preventDefault();
