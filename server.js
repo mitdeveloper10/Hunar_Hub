@@ -52,22 +52,25 @@ async function sendEmailOTP(toEmail, toName, otpCode) {
 
     try {
         const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-        console.log(`[Brevo API] OTP Email successfully sent to ${toEmail}. Response:`, JSON.stringify(data));
+        console.log(`[Brevo API] OTP Email successfully sent to ${toEmail}. Message ID:`, data.messageId || 'N/A');
         return true;
     } catch (error) {
-        console.error('[Brevo API] Error sending email:', error);
+        const errorDetail = error.response ? JSON.stringify(error.response.body) : error.message;
+        console.error('[Brevo API] Failed to send email:', errorDetail);
+        
         // Fallback to SMTP if API fails
         try {
-            console.log('[SMTP] Attempting fallback to SMTP...');
+            console.log('[SMTP] Attempting fallback to SMTP relay...');
             await transporter.sendMail({
                 from: `"HunarHub Welcome" <${process.env.EMAIL_FROM}>`,
                 to: toEmail,
                 subject: "HunarHub - Your Verification Code (Fallback)",
                 html: sendSmtpEmail.htmlContent
             });
+            console.log('[SMTP] Fallback email sent successfully.');
             return true;
         } catch (smtpError) {
-            console.error('[SMTP Fallback] also failed:', smtpError);
+            console.error('[SMTP Fallback] Final failure:', smtpError.message);
             return false;
         }
     }
@@ -176,7 +179,9 @@ app.post('/api/register', async (req, res) => {
         db.prepare('INSERT INTO otps (email, code, expires_at) VALUES (?, ?, ?)').run(email, otpCode, expiresAt);
 
         // Send actual email via Brevo – asynchronous to prevent UI hang
-        sendEmailOTP(email, name, otpCode);
+        sendEmailOTP(email, name, otpCode).catch(err => {
+            console.error(`[Background Task] Failed to send OTP to ${email}:`, err.message);
+        });
 
         res.status(201).json({ message: 'User created successfully. Please verify your email.', email: email });
 

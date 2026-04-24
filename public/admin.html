@@ -34,7 +34,7 @@
 <body class="d-flex flex-column min-vh-100">
     <div class="layout-wrapper flex-grow-1">
         <!-- SaaS Minimalist Sidebar -->
-        <aside class="sidebar d-flex flex-column p-0 border-end shadow-sm" style="background: #ffffff; border-color: var(--border-color) !important;">
+        <aside class="sidebar d-flex flex-column p-0 border-end shadow-sm" style="border-color: var(--border-color) !important;">
             <div class="p-4 border-bottom mb-3" style="border-color: var(--border-color) !important;">
                 <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-heading mb-0" href="/">
                     <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
@@ -65,7 +65,7 @@
         </aside>
 
         <!-- Main Content Column -->
-        <main class="content-area" id="content">
+        <main class="content-area" id="adminMain">
             <header class="d-flex justify-content-between align-items-center mb-5 animate-slide-up">
                 <div>
                     <h2 class="fw-bold text-heading mb-1" id="currentSectionTitle">Platform Overview</h2>
@@ -80,7 +80,7 @@
                 </div>
             </header>
 
-            <div id="content">
+            <div id="section-content">
                 <!-- Dynamic Sections -->
             </div>
         </main>
@@ -135,8 +135,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || user.role !== 'admin') { window.location.href = '/login.html'; }
+        let user = null;
+        try {
+            user = JSON.parse(localStorage.getItem('user'));
+        } catch (e) {
+            console.error('Session error:', e);
+        }
+
+        if (!user || user.role !== 'admin') { 
+            window.location.href = '/login.html'; 
+        }
 
         const sections = {
             dashboard: `
@@ -257,9 +265,20 @@
         function showSection(section, el) {
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
             if (el) el.classList.add('active');
-            document.getElementById('content').innerHTML = sections[section];
-            const titles = { dashboard: 'Platform Analytics', users: 'Customer Management', entrepreneurs: 'Creator Directory', orders: 'Market Activity', requests: 'Service Flow', feedback: 'Trust & Safety' };
-            document.getElementById('currentSectionTitle').innerText = titles[section];
+            
+            const target = document.getElementById('section-content');
+            if (!target) return console.error('Target container not found');
+            
+            target.innerHTML = sections[section];
+            const titles = { 
+                dashboard: 'Platform Analytics', 
+                users: 'Customer Management', 
+                entrepreneurs: 'Creator Directory', 
+                orders: 'Market Activity', 
+                requests: 'Service Flow', 
+                feedback: 'Trust & Safety' 
+            };
+            document.getElementById('currentSectionTitle').innerText = titles[section] || 'Admin Panel';
 
             if (section === 'dashboard') loadStats(), loadPending();
             else if (section === 'users') loadUsers();
@@ -299,66 +318,91 @@
         }
 
         async function loadUsers() {
-            const users = await (await fetch('/api/admin/users')).json();
-            document.getElementById('usersTable').innerHTML = users.map(u => `
-                <tr>
-                    <td class="ps-4 fw-bold small">${u.name} <span class="text-muted fw-normal">#${u.id}</span></td>
-                    <td class="small text-muted">${u.email}</td>
-                    <td><span class="badge ${u.role === 'admin' ? 'bg-danger' : 'bg-light text-primary border'} px-2 py-0">${u.role.toUpperCase()}</span></td>
-                    <td class="text-end pe-4 small text-muted">${new Date(u.created_at).toLocaleDateString()}</td>
-                </tr>
-            `).join('');
+            try {
+                const res = await fetch('/api/admin/users');
+                const users = await res.json();
+                document.getElementById('usersTable').innerHTML = users.map(u => `
+                    <tr>
+                        <td class="ps-4 fw-bold small">${u.name} <span class="text-muted fw-normal">#${u.id}</span></td>
+                        <td class="small text-muted">${u.email}</td>
+                        <td><span class="badge ${u.role === 'admin' ? 'bg-danger' : 'bg-light text-primary border'} px-2 py-0">${u.role.toUpperCase()}</span></td>
+                        <td class="text-end pe-4 small text-muted">${new Date(u.created_at).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading users:', err);
+            }
         }
 
         async function loadEntrepreneurs() {
-            const list = await (await fetch('/api/admin/entrepreneurs-all')).json();
-            document.getElementById('entrepreneursTable').innerHTML = list.map(e => `
-                <tr>
-                    <td class="ps-4 fw-bold text-primary small">${e.business_name}</td>
-                    <td class="small">${e.name}</td>
-                    <td><span class="badge ${e.verified ? 'bg-success' : 'bg-warning text-dark'} px-2 py-0 text-uppercase" style="font-size:0.6rem">${e.verified ? 'Verified' : 'Pending'}</span></td>
-                    <td class="text-end pe-4">
-                        ${!e.verified ? `<button class="btn btn-sm btn-success py-0 px-2" onclick="verifyEntrepreneur(${e.id})">Verify</button>` : '<i class="bi bi-check2-all text-success"></i>'}
-                    </td>
-                </tr>
-            `).join('');
+            try {
+                const res = await fetch('/api/admin/entrepreneurs-all');
+                const list = await res.json();
+                document.getElementById('entrepreneursTable').innerHTML = list.map(e => `
+                    <tr>
+                        <td class="ps-4 fw-bold text-primary small">${e.business_name}</td>
+                        <td class="small">${e.name}</td>
+                        <td><span class="badge ${e.verified ? 'bg-success' : 'bg-warning text-dark'} px-2 py-0 text-uppercase" style="font-size:0.6rem">${e.verified ? 'Verified' : 'Pending'}</span></td>
+                        <td class="text-end pe-4">
+                            ${!e.verified ? `<button class="btn btn-sm btn-success py-0 px-2" onclick="verifyEntrepreneur(${e.id})">Verify</button>` : '<i class="bi bi-check2-all text-success"></i>'}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading entrepreneurs:', err);
+            }
         }
 
         async function loadOrders() {
-            const o = await (await fetch('/api/admin/orders')).json();
-            document.getElementById('ordersTable').innerHTML = o.map(x => `
-                <tr>
-                    <td class="ps-4 small fw-bold">#${x.id} <span class="text-muted fw-normal">(${x.product_name})</span></td>
-                    <td class="small text-muted">${x.customer_name} &rarr; ${x.entrepreneur_name}</td>
-                    <td><span class="badge bg-primary px-2 py-0">${x.status}</span></td>
-                    <td class="text-end pe-4 small text-muted">${new Date(x.created_at).toLocaleDateString()}</td>
-                </tr>
-            `).join('');
+            try {
+                const res = await fetch('/api/admin/orders');
+                const o = await res.json();
+                document.getElementById('ordersTable').innerHTML = o.map(x => `
+                    <tr>
+                        <td class="ps-4 small fw-bold">#${x.id} <span class="text-muted fw-normal">(${x.product_name})</span></td>
+                        <td class="small text-muted">${x.customer_name} &rarr; ${x.entrepreneur_name}</td>
+                        <td><span class="badge bg-primary px-2 py-0">${x.status}</span></td>
+                        <td class="text-end pe-4 small text-muted">${new Date(x.created_at).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading orders:', err);
+            }
         }
 
         async function loadRequests() {
-            const r = await (await fetch('/api/admin/requests')).json();
-            document.getElementById('requestsTable').innerHTML = r.map(x => `
-                <tr>
-                    <td class="ps-4 small fw-bold">#${x.id}</td>
-                    <td class="small text-primary fw-bold">${x.service_name}</td>
-                    <td class="small text-muted">${x.customer_name} &rarr; ${x.entrepreneur_name}</td>
-                    <td><span class="badge bg-info text-white px-2 py-0">${x.status}</span></td>
-                    <td class="text-end pe-4 small text-muted">${new Date(x.request_date).toLocaleDateString()}</td>
-                </tr>
-            `).join('');
+            try {
+                const res = await fetch('/api/admin/requests');
+                const r = await res.json();
+                document.getElementById('requestsTable').innerHTML = r.map(x => `
+                    <tr>
+                        <td class="ps-4 small fw-bold">#${x.id}</td>
+                        <td class="small text-primary fw-bold">${x.service_name}</td>
+                        <td class="small text-muted">${x.customer_name} &rarr; ${x.entrepreneur_name}</td>
+                        <td><span class="badge bg-info text-white px-2 py-0">${x.status}</span></td>
+                        <td class="text-end pe-4 small text-muted">${new Date(x.request_date).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading requests:', err);
+            }
         }
 
         async function loadFeedback() {
-             const f = await (await fetch('/api/admin/reviews')).json();
-             document.getElementById('feedbackTable').innerHTML = f.map(x => `
-                <tr>
-                    <td class="ps-4 text-warning">${'★'.repeat(x.rating)}</td>
-                    <td class="small text-muted" style="max-width:200px">${x.comment}</td>
-                    <td class="small">${x.customer_name} &rarr; <span class="text-primary">${x.business_name}</span></td>
-                    <td class="text-end pe-4 small text-muted">${new Date(x.created_at).toLocaleDateString()}</td>
-                </tr>
-             `).join('');
+             try {
+                 const res = await fetch('/api/admin/reviews');
+                 const f = await res.json();
+                 document.getElementById('feedbackTable').innerHTML = f.map(x => `
+                    <tr>
+                        <td class="ps-4 text-warning">${'★'.repeat(x.rating)}</td>
+                        <td class="small text-muted" style="max-width:200px">${x.comment}</td>
+                        <td class="small">${x.customer_name} &rarr; <span class="text-primary">${x.business_name}</span></td>
+                        <td class="text-end pe-4 small text-muted">${new Date(x.created_at).toLocaleDateString()}</td>
+                    </tr>
+                 `).join('');
+             } catch (err) {
+                 console.error('Error loading feedback:', err);
+             }
         }
 
         async function verifyEntrepreneur(id) {
