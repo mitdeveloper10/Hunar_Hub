@@ -147,13 +147,16 @@
                                     <input type="text" name="business_name" class="form-control py-2" placeholder="Business or Brand Name">
                                 </div>
                                 <div class="col-md-6">
-                                    <select name="category" class="form-select py-2">
+                                    <select name="category" id="categorySelect" class="form-select py-2" onchange="checkOtherCategory()">
                                         <option value="Handicrafts">Handicrafts</option>
                                         <option value="Food">Food & Beverage</option>
                                         <option value="Services">Services</option>
                                         <option value="Art">Art & Design</option>
                                         <option value="Other">Other Category</option>
                                     </select>
+                                </div>
+                                <div class="col-12 mt-2" id="otherCategoryWrapper" style="display: none;">
+                                    <input type="text" id="otherCategoryInput" class="form-control py-2" placeholder="Please specify your category">
                                 </div>
                                 <div class="col-md-6">
                                     <input type="text" name="location" class="form-control py-2" placeholder="Primary Location">
@@ -187,6 +190,20 @@
             fields.style.display = isEnt ? 'block' : 'none';
         }
 
+        function checkOtherCategory() {
+            const select = document.getElementById('categorySelect');
+            const wrapper = document.getElementById('otherCategoryWrapper');
+            const input = document.getElementById('otherCategoryInput');
+            
+            if (select.value === 'Other') {
+                wrapper.style.display = 'block';
+                input.required = true;
+            } else {
+                wrapper.style.display = 'none';
+                input.required = false;
+            }
+        }
+
 
 
         const togglePassword = document.getElementById('togglePassword');
@@ -207,6 +224,11 @@
             
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
+
+            // Handle Other Category
+            if (data.category === 'Other') {
+                data.category = document.getElementById('otherCategoryInput').value;
+            }
 
             const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
             const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
